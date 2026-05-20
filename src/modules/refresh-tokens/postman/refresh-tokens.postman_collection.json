@@ -1,0 +1,84 @@
+{
+  "info": {
+    "_postman_id": "e6f70819-ab1c-4d2e-9f3a-4b5c6d7e8f90",
+    "name": "Session Management",
+    "description": "## RefreshTokens\n\nUnified session-management endpoints shared by all roles. The role is embedded in the opaque token's DB record — the client uses the same URLs whether the principal is admin or user.\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nNo bearer header is required: the opaque refresh token is sent in the request body and authenticates the call by itself.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_refresh_token` | Admin refresh token (auto-set on login) |\n| `admin_access_token` | Admin JWT (auto-set on refresh) |\n| `user_refresh_token` | User refresh token (auto-set on OTP verify) |\n| `user_access_token` | User JWT (auto-set on refresh) |\n| `active_role` | Role used by Logout to clear the right token pair (set this to `admin` or `user` before calling Logout). |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Session lifecycle endpoints.",
+      "item": [
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{admin_refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token issued on login. |\n\n### Notes\nRotates the presented refresh token atomically: the old row is revoked and a new one is issued in the same transaction. Reusing an already-rotated token revokes every active session for the principal (suspected theft). The test script updates `<role>_access_token` and `<role>_refresh_token` for the role embedded in the response.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Token missing, expired, revoked, or reused after rotation |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "const p = r?.data || r;",
+                  "const role = (p?.role || p?.user?.role || 'user').toString().toLowerCase();",
+                  "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                  "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{admin_refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token to revoke. |\n\n### Notes\nIdempotent: revoking an unknown or already-revoked token returns success. Set the environment variable `active_role` (`admin` or `user`) before calling so the test script clears the right token pair.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const role = pm.environment.get('active_role') || 'user';",
+                  "  pm.environment.unset(`${role}_access_token`);",
+                  "  pm.environment.unset(`${role}_refresh_token`);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

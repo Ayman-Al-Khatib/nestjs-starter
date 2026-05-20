@@ -1,0 +1,63 @@
+{
+    "validation": {
+        "storage_file": {
+            "not_found": "الملف المحدد غير موجود.",
+            "not_found_multiple": "واحد أو أكثر من الملفات المحددة غير موجود."
+        },
+        "id": {
+            "array": "{property} يجب أن يكون قائمة.",
+            "empty": "{property} لا يمكن أن يكون فارغاً.",
+            "integer": "{property} يجب أن يكون رقماً صحيحاً.",
+            "positive": "{property} يجب أن يكون رقماً موجباً."
+        },
+        "string": {
+            "invalid": "{property} يجب أن يكون نصاً.",
+            "empty": "{property} لا يمكن أن يكون فارغاً.",
+            "too_short": "{property} قصير جداً.",
+            "too_long": "{property} طويل جداً."
+        },
+        "boolean": {
+            "invalid": "{property} يجب أن يكون نعم أو لا.",
+            "required": "{property} مطلوب."
+        },
+        "phone": {
+            "invalid_syria": "{property} يجب أن يكون رقم هاتف سوري صحيح (MTN: 94، 95، 96 — Syriatel: 93، 98، 99)."
+        },
+        "greater_than": {
+            "invalid": "{property} يجب أن يكون أكبر من {related}."
+        },
+        "greater_than_or_equal": {
+            "invalid": "{property} يجب أن يكون أكبر من أو يساوي {related}."
+        },
+        "time": {
+            "invalid_format": "{property} يجب أن يكون وقتاً صحيحاً بصيغة HH:mm (00:00–23:59).",
+            "invalid_range": "{property} يجب أن يكون أكبر من {related}."
+        },
+        "enum": {
+            "invalid": "{property} يحتوي على قيمة غير صالحة."
+        },
+        "name": {
+            "invalid": "{property} يجب أن يحتوي على حروف عربية أو إنكليزية فقط مع مسافة واحدة بين الكلمات."
+        },
+        "date": {
+            "invalid": "{property} يجب أن يكون تاريخاً صحيحاً.",
+            "must_be_past": "{property} يجب أن يكون تاريخاً في الماضي.",
+            "must_be_utc_iso8601": "{property} يجب أن يكون نصاً بصيغة ISO-8601 UTC ينتهي بـ Z (مثل 2026-04-28T10:30:00.000Z)."
+        },
+        "number": {
+            "invalid": "{property} يجب أن يكون رقماً صحيحاً.",
+            "too_small": "{property} يجب أن يكون {min} على الأقل.",
+            "too_large": "{property} يجب أن لا يتجاوز {max}."
+        },
+        "timezone": {
+            "invalid": "{property} يجب أن يكون معرف منطقة زمنية IANA صحيحاً (مثل Asia/Damascus)."
+        },
+        "array": {
+            "invalid": "{property} يجب أن يكون قائمة.",
+            "too_large": "{property} يجب أن يحتوي على {max} عنصر كحد أقصى."
+        }
+    },
+    "errors": {
+        "too_many_requests": "عدد كبير جداً من الطلبات. الرجاء المحاولة لاحقاً."
+    }
+}

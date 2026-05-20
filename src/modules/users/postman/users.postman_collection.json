@@ -1,0 +1,240 @@
+{
+  "info": {
+    "_postman_id": "f708192a-bc2d-4e3f-8051-6b7c8d9e0f1a",
+    "name": "User Management",
+    "description": "## Users\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nUser endpoints require `Authorization: Bearer {{user_access_token}}`. Admin endpoints require `Authorization: Bearer {{admin_access_token}}`. Auth (OTP) endpoints are public.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `user_access_token` | User JWT (auto-set on OTP verify) |\n| `user_refresh_token` | User refresh token (auto-set on OTP verify) |\n| `admin_access_token` | Admin JWT (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Public OTP-based authentication endpoints for users.",
+      "item": [
+        {
+          "name": "Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+963944123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/user/otp/request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "user", "otp", "request"]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone number, normalized to international form (e.g. `+963944123456`). |\n\n### Notes\nIssuing an OTP for an unknown phone is fine — the user row is auto-provisioned on first successful verify. Enforces a per-phone resend cooldown and a rolling issue-rate cap. If WhatsApp dispatch fails, the response still succeeds with a `warning` field set.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 400 | Resend cooldown not elapsed |\n| 401 | Phone locked due to too many failed attempts |\n| 422 | Validation failed (bad phone format) |\n| 429 | Auth throttle exceeded |"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+963944123456\",\n  \"code\": \"000000\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/user/otp/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "user", "otp", "verify"]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone number, same one the OTP was issued for. |\n| code | string | YES | 4–8 digit OTP code received via WhatsApp. |\n\n### Notes\nOn success, creates or fetches the matching user row, issues an access token and an opaque refresh token. Response includes `requiresProfileCompletion` so the client knows whether to route into onboarding. The test script auto-saves both tokens into environment variables keyed by role.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | No active code, invalid code, expired, too many attempts, or phone locked |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "const p = r?.data || r;",
+                  "const role = (p?.user?.role || 'user').toString().toLowerCase();",
+                  "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                  "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "description": "User self-profile endpoints. All routes require a user access token.",
+      "item": [
+        {
+          "name": "Complete Profile",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/me/complete-profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "me", "complete-profile"]
+            },
+            "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | YES | 1–100 chars, name characters only. |\n| lastName | string | YES | 1–100 chars, name characters only. |\n| gender | enum | YES | `male` or `female`. |\n| birthDate | ISO-8601 date | YES | Must be in the past. |\n| cityId | number | YES | Existing city ID. |\n| address | string | Optional | Free-text, up to 512 chars. |\n\n### Notes\nFlips `isProfileCompleted` to true. Calling it again after completion returns 400.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 400 | Profile already completed |\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "me"]
+            },
+            "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | Optional | 1–100 chars. |\n| lastName | string | Optional | 1–100 chars. |\n| gender | enum \\| null | Optional | `male` or `female`. |\n| birthDate | ISO-8601 date \\| null | Optional | Must be in the past. |\n| cityId | number \\| null | Optional | Existing city ID, or `null` to clear. |\n| address | string \\| null | Optional | Up to 512 chars. |\n\n### Notes\nUndefined fields are skipped (no change). Nullable fields accept `null` to clear them.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Photo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Profile photo file. Allowed mime types and size limits enforced by the storage layer (jpeg/png/webp; ~5MB)."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/me/photo",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "me", "photo"]
+            },
+            "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| photo | file | YES | Single file upload (multipart/form-data). Replaces any existing photo. |\n\n### Notes\nReplaces the previous photo if one exists. Subject to the upload throttle.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 413 | File too large |\n| 415 | Unsupported media type |\n| 429 | Upload throttle exceeded |"
+          },
+          "response": []
+        },
+        {
+          "name": "Find Me",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{user_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "me"]
+            },
+            "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\nNone — reads the principal from the access token.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Admin-side user management.",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+963944123456\",\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone, unique across users. |\n| firstName | string | YES | 1–100 chars. |\n| lastName | string | YES | 1–100 chars. |\n| gender | enum | YES | `male` or `female`. |\n| birthDate | ISO-8601 date | YES | Must be in the past. |\n| cityId | number | YES | Existing city ID. |\n| address | string | Optional | Up to 512 chars. |\n\n### Notes\nBypasses the OTP flow used by user self-onboarding. Created with `isProfileCompleted = true`.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | Phone already registered |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Find All",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "page", "value": "1", "disabled": false },
+                { "key": "limit", "value": "10", "disabled": false },
+                { "key": "search", "value": "ali", "disabled": true },
+                { "key": "isProfileCompleted", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| page | number | Optional | Page number (default 1). |\n| limit | number | Optional | Items per page (default 10). |\n| search | string | Optional | Free-text match against `firstName` / `lastName` / `phone`. |\n| isProfileCompleted | boolean | Optional | Filter by onboarding completion. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Find One",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", ":userId"],
+              "variable": [{ "key": "userId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| userId | path param | YES | User ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | User not found |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

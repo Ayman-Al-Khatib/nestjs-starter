@@ -1,0 +1,8 @@
+{
+    "errors": {
+        "not_found": "User not found.",
+        "phone_taken": "This phone number is already registered to another user.",
+        "profile_not_completed": "Please complete your profile before continuing.",
+        "profile_already_completed": "Your profile has already been completed."
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "errors": {
+        "invalid_credentials": "اسم المستخدم أو كلمة السر غير صحيحة.",
+        "username_taken": "اسم المستخدم هذا مستخدم بالفعل.",
+        "current_password_required": "كلمة السر الحالية مطلوبة لتغيير بيانات الدخول.",
+        "current_password_incorrect": "كلمة السر الحالية غير صحيحة."
+    }
+}

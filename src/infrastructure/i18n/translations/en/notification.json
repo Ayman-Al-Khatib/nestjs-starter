@@ -1,0 +1,9 @@
+{
+    "errors": {
+        "title_required": "Notification title is required.",
+        "body_required": "Notification body is required.",
+        "token_required": "Target device token is required.",
+        "tokens_required": "Target device tokens must be a non-empty array.",
+        "topic_required": "Target topic is required."
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "errors": {
+        "resend_cooldown": "Please wait {seconds} seconds before requesting a new code.",
+        "no_active_code": "No active code for this phone. Please request a new one.",
+        "invalid_code": "Invalid code.",
+        "code_expired": "The code has expired. Please request a new one.",
+        "too_many_attempts": "Too many attempts. Please request a new code.",
+        "phone_locked": "This phone is temporarily locked due to repeated failed attempts. Please try again in {minutes} minutes.",
+        "issue_rate_exceeded": "Too many verification code requests. Please try again in {minutes} minutes."
+    },
+    "messages": {
+        "code_sent": "Verification code sent via WhatsApp."
+    },
+    "warnings": {
+        "dispatch_failed": "Your verification code was generated but could not be sent via WhatsApp. If you did not receive it, please contact support."
+    }
+}

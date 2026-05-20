@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Logs
+logs
+*.log
+npm-debug.log
+yarn-error.log
+
+# Git
+.git
+.gitignore
+
+# Docker files (prevent recursive copy)
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Documentation
+README.md
+DOCKER-K8S-README.md
+
+# Tests
+coverage
+test
+tests
+*.spec.ts
+*.test.ts
+
+# Environment files
+.env
+.env.*
+env
+
+# IDE and editors
+.vscode
+.idea
+
+# Kubernetes and deployment (not needed in image)
+k8s
+.kiro
+.gitlab-ci.yml
+vercel.json
+
+# Scripts (not needed in image)
+scripts
+sql
+commands.sh
+
+# Uploads (mounted as volume)
+uploads

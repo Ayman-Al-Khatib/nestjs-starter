@@ -1,0 +1,8 @@
+{
+  "errors": {
+    "not_found": "City not found.",
+    "name_en_taken": "A city with this English name already exists.",
+    "name_ar_taken": "A city with this Arabic name already exists.",
+    "cannot_delete_in_use": "Cannot delete this city because it is associated with one or more areas or other records."
+  }
+}

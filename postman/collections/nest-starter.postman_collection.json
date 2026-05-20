@@ -1,0 +1,1228 @@
+{
+  "info": {
+    "_postman_id": "479df4eb-bac2-46af-a7e9-0513a5ea54ba",
+    "name": "Nest Starter",
+    "description": "## Nest Starter\n\nA reusable NestJS 11 + TypeORM 0.3 + PostgreSQL base project.\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nProtected endpoints require `Authorization: Bearer {{<role>_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL (e.g. `http://localhost:3000`) |\n| `admin_access_token` | Admin JWT (auto-set on login) |\n| `doctor_access_token` | Doctor JWT (auto-set on login) |\n| `patient_access_token` | Patient JWT (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54486576",
+    "_collection_link": "https://go.postman.co/collection/54486576-479df4eb-bac2-46af-a7e9-0513a5ea54ba?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Admins",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const r = pm.response.json();",
+                      "const p = r?.data || r;",
+                      "const role = (p?.user?.role || 'user').toString().toLowerCase();",
+                      "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                      "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@12345\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/admin/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| username | string | YES | Admin username, 3–64 chars. |\n| password | string | YES | Admin password, 8–128 chars. |\n\n### Notes\nOn success, the test script saves `accessToken` and `refreshToken` into environment variables keyed by role (auto-detected from the response payload `user.role`).\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Invalid credentials |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Public auth endpoints for admin sign-in."
+        },
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "Update Me",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"phone\": \"+963944123456\",\n  \"username\": \"admin\",\n  \"password\": \"Admin@12345\",\n  \"currentPassword\": \"Admin@12345\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "me"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | Optional | 1–100 chars. Personal name characters only. |\n| lastName | string | Optional | 1–100 chars. Personal name characters only. |\n| phone | string \\| null | Optional | Syrian phone, normalized to international form. |\n| username | string | Optional | 3–64 chars. |\n| password | string | Optional | 8–128 chars. |\n| currentPassword | string | Conditional | **Required** when `username` or `password` is provided. |\n\n### Validation\n| Field | Rule |\n|---|---|\n| firstName / lastName | name-character regex (`@IsName`) |\n| phone | Syrian phone (`@SyriaPhone`) |\n| currentPassword | required iff `username` or `password` is set |\n\n### Notes\nUndefined fields are skipped (no change). Send `null` only for nullable fields (`phone`) to clear them. To change credentials, include `currentPassword`.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token or wrong `currentPassword` |\n| 403 | Insufficient role |\n| 409 | `username` already taken |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Upload Photo",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "photo",
+                      "type": "file",
+                      "description": "Profile photo file. Allowed mime types and size limits are enforced by the storage layer (jpeg/png/webp; ~5MB).",
+                      "src": "/C:/Users/Ayman_Alkhatib/Desktop/cars/vehicle-brand-logos/kia.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/me/photo",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "me",
+                    "photo"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| photo | file | YES | Single file upload (multipart/form-data). Replaces any existing photo. |\n\n### Notes\nReplaces the previous photo if one exists. Subject to the upload throttle.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 413 | File too large |\n| 415 | Unsupported media type |\n| 429 | Upload throttle exceeded |"
+              },
+              "response": []
+            },
+            {
+              "name": "Find Me",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "me"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone — reads the principal from the access token.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Admin self-profile endpoints. All routes require an admin access token."
+        }
+      ],
+      "description": "## Admins\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nProtected endpoints require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |\n| `admin_refresh_token` | Admin refresh token (auto-set on login) |"
+    },
+    {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nameEn\": \"Damascus\",\n  \"nameAr\": \"دمشق\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/cities/admin",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities",
+                    "admin"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| nameEn | string | YES | English name, max 128 chars. Globally unique. |\n| nameAr | string | YES | Arabic name, max 128 chars. Globally unique. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 409 | City name (en or ar) already exists |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Update",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nameEn\": \"Old Damascus\",\n  \"nameAr\": \"دمشق القديمة\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/cities/admin/:cityId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities",
+                    "admin",
+                    ":cityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "cityId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| nameEn | string | Optional | New English name. |\n| nameAr | string | Optional | New Arabic name. |\n\n### Notes\nOmitted fields are left unchanged.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | City name (en or ar) already exists |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/cities/admin/:cityId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities",
+                    "admin",
+                    ":cityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "cityId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | path param | YES | City ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | City is referenced by other rows (areas, users) and cannot be removed |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Admin-only mutators for cities (create, update, delete)."
+        },
+        {
+          "name": "Public",
+          "item": [
+            {
+              "name": "Find All",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/cities",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities"
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\nNone — returns the full list of cities (unpaginated lookup).\n\n### Errors\nNone in the normal path."
+              },
+              "response": []
+            },
+            {
+              "name": "Find One",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/cities/:cityId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "cities",
+                    ":cityId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "cityId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | path param | YES | City ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 404 | City not found |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Public read endpoints for browsing cities."
+        }
+      ],
+      "description": "## Cities\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nPublic list/get endpoints require no token. Admin mutators require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |"
+    },
+    {
+      "name": "Areas",
+      "item": [
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cityId\": 1,\n  \"nameEn\": \"Downtown\",\n  \"nameAr\": \"وسط البلد\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/areas/admin",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "areas",
+                    "admin"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | number | YES | ID of the parent city. |\n| nameEn | string | YES | English name, max 128 chars. |\n| nameAr | string | YES | Arabic name, max 128 chars. |\n\n### Notes\n`(cityId, nameEn)` and `(cityId, nameAr)` are unique pairs.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | Area name already exists for this city |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Update",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cityId\": 1,\n  \"nameEn\": \"Old Downtown\",\n  \"nameAr\": \"وسط البلد القديم\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/areas/admin/:areaId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "areas",
+                    "admin",
+                    ":areaId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "areaId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | number | Optional | Reassign to a different city. |\n| nameEn | string | Optional | New English name. |\n| nameAr | string | Optional | New Arabic name. |\n\n### Notes\nUndefined fields are skipped (no change).\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | Area or city not found |\n| 409 | Area name already exists for this city |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Delete",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/areas/admin/:areaId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "areas",
+                    "admin",
+                    ":areaId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "areaId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| areaId | path param | YES | Area ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | Area not found |\n| 409 | Area is referenced by other rows and cannot be removed |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Admin-only mutators for areas (create, update, delete)."
+        },
+        {
+          "name": "Public",
+          "item": [
+            {
+              "name": "Find All",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/areas?page=1&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "areas"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "search",
+                      "value": "downtown",
+                      "disabled": true
+                    },
+                    {
+                      "key": "cityId",
+                      "value": "1",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| page | number | Optional | Page number (default 1). |\n| limit | number | Optional | Items per page (default 10). |\n| search | string | Optional | Free-text match against `nameEn` / `nameAr`. |\n| cityId | number | Optional | Filter by parent city. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Find One",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/areas/:areaId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "areas",
+                    ":areaId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "areaId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| areaId | path param | YES | Area ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 404 | Area not found |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Public read endpoints for browsing areas."
+        }
+      ],
+      "description": "## Areas\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nPublic list/get endpoints require no token. Admin mutators require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |"
+    },
+    {
+      "name": "Session Management",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Refresh",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const r = pm.response.json();",
+                      "const p = r?.data || r;",
+                      "const role = (p?.role || p?.user?.role || 'user').toString().toLowerCase();",
+                      "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                      "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{admin_refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token issued on login. |\n\n### Notes\nRotates the presented refresh token atomically: the old row is revoked and a new one is issued in the same transaction. Reusing an already-rotated token revokes every active session for the principal (suspected theft). The test script updates `<role>_access_token` and `<role>_refresh_token` for the role embedded in the response.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Token missing, expired, revoked, or reused after rotation |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                      "  const role = pm.environment.get('active_role') || 'user';",
+                      "  pm.environment.unset(`${role}_access_token`);",
+                      "  pm.environment.unset(`${role}_refresh_token`);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{admin_refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token to revoke. |\n\n### Notes\nIdempotent: revoking an unknown or already-revoked token returns success. Set the environment variable `active_role` (`admin` or `user`) before calling so the test script clears the right token pair.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Session lifecycle endpoints."
+        }
+      ],
+      "description": "## RefreshTokens\n\nUnified session-management endpoints shared by all roles. The role is embedded in the opaque token's DB record — the client uses the same URLs whether the principal is admin or user.\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nNo bearer header is required: the opaque refresh token is sent in the request body and authenticates the call by itself.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `admin_refresh_token` | Admin refresh token (auto-set on login) |\n| `admin_access_token` | Admin JWT (auto-set on refresh) |\n| `user_refresh_token` | User refresh token (auto-set on OTP verify) |\n| `user_access_token` | User JWT (auto-set on refresh) |\n| `active_role` | Role used by Logout to clear the right token pair (set this to `admin` or `user` before calling Logout). |"
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Request OTP",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+963944123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/user/otp/request",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "user",
+                    "otp",
+                    "request"
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone number, normalized to international form (e.g. `+963944123456`). |\n\n### Notes\nIssuing an OTP for an unknown phone is fine — the user row is auto-provisioned on first successful verify. Enforces a per-phone resend cooldown and a rolling issue-rate cap. If WhatsApp dispatch fails, the response still succeeds with a `warning` field set.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 400 | Resend cooldown not elapsed |\n| 401 | Phone locked due to too many failed attempts |\n| 422 | Validation failed (bad phone format) |\n| 429 | Auth throttle exceeded |"
+              },
+              "response": []
+            },
+            {
+              "name": "Verify OTP",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const r = pm.response.json();",
+                      "const p = r?.data || r;",
+                      "const role = (p?.user?.role || 'user').toString().toLowerCase();",
+                      "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                      "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+963944123456\",\n  \"code\": \"000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/user/otp/verify",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "user",
+                    "otp",
+                    "verify"
+                  ]
+                },
+                "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone number, same one the OTP was issued for. |\n| code | string | YES | 4–8 digit OTP code received via WhatsApp. |\n\n### Notes\nOn success, creates or fetches the matching user row, issues an access token and an opaque refresh token. Response includes `requiresProfileCompletion` so the client knows whether to route into onboarding. The test script auto-saves both tokens into environment variables keyed by role.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | No active code, invalid code, expired, too many attempts, or phone locked |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Public OTP-based authentication endpoints for users."
+        },
+        {
+          "name": "Profile",
+          "item": [
+            {
+              "name": "Complete Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{user_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/user/me/complete-profile",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "user",
+                    "me",
+                    "complete-profile"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | YES | 1–100 chars, name characters only. |\n| lastName | string | YES | 1–100 chars, name characters only. |\n| gender | enum | YES | `male` or `female`. |\n| birthDate | ISO-8601 date | YES | Must be in the past. |\n| cityId | number | YES | Existing city ID. |\n| address | string | Optional | Free-text, up to 512 chars. |\n\n### Notes\nFlips `isProfileCompleted` to true. Calling it again after completion returns 400.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 400 | Profile already completed |\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Update Me",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{user_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/user/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "user",
+                    "me"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | Optional | 1–100 chars. |\n| lastName | string | Optional | 1–100 chars. |\n| gender | enum \\| null | Optional | `male` or `female`. |\n| birthDate | ISO-8601 date \\| null | Optional | Must be in the past. |\n| cityId | number \\| null | Optional | Existing city ID, or `null` to clear. |\n| address | string \\| null | Optional | Up to 512 chars. |\n\n### Notes\nUndefined fields are skipped (no change). Nullable fields accept `null` to clear them.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Upload Photo",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{user_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "photo",
+                      "type": "file",
+                      "description": "Profile photo file. Allowed mime types and size limits enforced by the storage layer (jpeg/png/webp; ~5MB).",
+                      "value": ""
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/user/me/photo",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "user",
+                    "me",
+                    "photo"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| photo | file | YES | Single file upload (multipart/form-data). Replaces any existing photo. |\n\n### Notes\nReplaces the previous photo if one exists. Subject to the upload throttle.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 413 | File too large |\n| 415 | Unsupported media type |\n| 429 | Upload throttle exceeded |"
+              },
+              "response": []
+            },
+            {
+              "name": "Find Me",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{user_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/user/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "user",
+                    "me"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{user_access_token}}` — required (User role).\n\n### Input\nNone — reads the principal from the access token.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |"
+              },
+              "response": []
+            }
+          ],
+          "description": "User self-profile endpoints. All routes require a user access token."
+        },
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Create",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+963944123456\",\n  \"firstName\": \"Ali\",\n  \"lastName\": \"Hassan\",\n  \"gender\": \"male\",\n  \"birthDate\": \"1995-02-14T00:00:00.000Z\",\n  \"cityId\": 1,\n  \"address\": \"Mazzeh\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/users",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone, unique across users. |\n| firstName | string | YES | 1–100 chars. |\n| lastName | string | YES | 1–100 chars. |\n| gender | enum | YES | `male` or `female`. |\n| birthDate | ISO-8601 date | YES | Must be in the past. |\n| cityId | number | YES | Existing city ID. |\n| address | string | Optional | Up to 512 chars. |\n\n### Notes\nBypasses the OTP flow used by user self-onboarding. Created with `isProfileCompleted = true`.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | Phone already registered |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Find All",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/users?page=1&limit=10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "search",
+                      "value": "ali",
+                      "disabled": true
+                    },
+                    {
+                      "key": "isProfileCompleted",
+                      "value": "false",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| page | number | Optional | Page number (default 1). |\n| limit | number | Optional | Items per page (default 10). |\n| search | string | Optional | Free-text match against `firstName` / `lastName` / `phone`. |\n| isProfileCompleted | boolean | Optional | Filter by onboarding completion. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 422 | Validation failed |"
+              },
+              "response": []
+            },
+            {
+              "name": "Find One",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/users/:userId",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    ":userId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "userId",
+                      "value": "1"
+                    }
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| userId | path param | YES | User ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | User not found |"
+              },
+              "response": []
+            }
+          ],
+          "description": "Admin-side user management."
+        }
+      ],
+      "description": "## Users\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nUser endpoints require `Authorization: Bearer {{user_access_token}}`. Admin endpoints require `Authorization: Bearer {{admin_access_token}}`. Auth (OTP) endpoints are public.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `user_access_token` | User JWT (auto-set on OTP verify) |\n| `user_refresh_token` | User refresh token (auto-set on OTP verify) |\n| `admin_access_token` | Admin JWT (auto-set on login) |"
+    },
+    {
+      "name": "Whatsapp",
+      "item": [
+        {
+          "name": "Admin",
+          "item": [
+            {
+              "name": "Send",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+963968381625\",\n  \"text\": \"Hello from the admin console.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/whatsapp/send",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "whatsapp",
+                    "send"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone, normalized to international form. |\n| text | string | YES | Message body, up to 4096 chars. |\n\n### Notes\nRoutes through the same paced queue OTPs use, so rapid manual triggers can't bypass the anti-ban throttle. Returns `202 Accepted` with a queue position — delivery is asynchronous.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 422 | Validation failed |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+              },
+              "response": []
+            },
+            {
+              "name": "Logout",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/whatsapp/logout",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "whatsapp",
+                    "logout"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone — operates on the server's persisted Baileys session.\n\n### Notes\nUnpairs the WhatsApp account and wipes local credentials, freeing `/qr` to pair a different phone number.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+              },
+              "response": []
+            },
+            {
+              "name": "Get QR",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/whatsapp/qr",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "whatsapp",
+                    "qr"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone.\n\n### Notes\nReturns the current pairing QR code as a base64 data URL. Scan from the WhatsApp mobile app under *Linked devices* to pair this server.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Status",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/admin/whatsapp/status",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "whatsapp",
+                    "status"
+                  ]
+                },
+                "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone.\n\n### Notes\nReturns `{ connected, paired }` — `connected` is the live socket state, `paired` reflects whether persisted credentials exist on disk.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+              },
+              "response": []
+            }
+          ],
+          "description": "WhatsApp session lifecycle and ad-hoc sending. All requests require an admin access token and a non-stub WhatsApp driver."
+        }
+      ],
+      "description": "## Whatsapp\n\nAdmin-only WhatsApp session management. All endpoints return `503` when `WHATSAPP_DRIVER=stub` — the provider guard short-circuits before the handler.\n\n### Base URL\n\n`{{base_url}}/api/v1`\n\n### Authentication\n\nAll endpoints require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n\n| Variable | Description |\n| --- | --- |\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |"
+    }
+  ]
+}

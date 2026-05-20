@@ -1,0 +1,95 @@
+# compiled output
+/dist
+/node_modules
+/build
+
+# Auto-generated i18n types
+/src/generated/i18n.generated.ts
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
+# .env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+env/.env.production
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# env
+
+/upload
+/uploads
+merged_output.txt
+
+.kiro
+.vscode
+
+# WhatsApp Baileys session credentials (contains device-pairing data,
+# never commit — re-pair via /v1/whatsapp/qr if lost).
+.wa-auth.json
+.wa-auth/
+
+# Documentation (generated guides)
+/docs/
+K8S-COMPLETE-GUIDE.md
+DOCKER-K8S-README.md
+OBSERVABILITY-GUIDE.md
+VERIFICATION-RUNBOOK.md
+
+# Kubernetes secrets (NEVER commit real secrets)
+k8s/secrets/*.yaml
+!k8s/secrets/README.md
+
+# Monitoring values with sensitive data
+k8s/monitoring/values-*.yaml
+!k8s/monitoring/values-*.yaml.example
+.vercel
+
+ide/*
+scripts/generate-postman.ts
+collection.json
+apis.ts

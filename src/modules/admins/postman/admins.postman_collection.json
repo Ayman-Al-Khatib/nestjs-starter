@@ -1,0 +1,126 @@
+{
+  "info": {
+    "_postman_id": "b3a4e5f1-2c7d-4f8a-9b6e-1d2e3f4a5b6c",
+    "name": "Admin Management",
+    "description": "## Admins\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nProtected endpoints require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |\n| `admin_refresh_token` | Admin refresh token (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Public auth endpoints for admin sign-in.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@12345\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/admin/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "admin", "login"]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| username | string | YES | Admin username, 3–64 chars. |\n| password | string | YES | Admin password, 8–128 chars. |\n\n### Notes\nOn success, the test script saves `accessToken` and `refreshToken` into environment variables keyed by role (auto-detected from the response payload `user.role`).\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Invalid credentials |\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "const p = r?.data || r;",
+                  "const role = (p?.user?.role || 'user').toString().toLowerCase();",
+                  "if (p?.accessToken)  pm.environment.set(`${role}_access_token`,  p.accessToken);",
+                  "if (p?.refreshToken) pm.environment.set(`${role}_refresh_token`, p.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "description": "Admin self-profile endpoints. All routes require an admin access token.",
+      "item": [
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"phone\": \"+963944123456\",\n  \"username\": null,\n  \"password\": null,\n  \"currentPassword\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "me"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| firstName | string | Optional | 1–100 chars. Personal name characters only. |\n| lastName | string | Optional | 1–100 chars. Personal name characters only. |\n| phone | string \\| null | Optional | Syrian phone, normalized to international form. |\n| username | string | Optional | 3–64 chars. |\n| password | string | Optional | 8–128 chars. |\n| currentPassword | string | Conditional | **Required** when `username` or `password` is provided. |\n\n### Validation\n| Field | Rule |\n|---|---|\n| firstName / lastName | name-character regex (`@IsName`) |\n| phone | Syrian phone (`@SyriaPhone`) |\n| currentPassword | required iff `username` or `password` is set |\n\n### Notes\nUndefined fields are skipped (no change). Send `null` only for nullable fields (`phone`) to clear them. To change credentials, include `currentPassword`.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token or wrong `currentPassword` |\n| 403 | Insufficient role |\n| 409 | `username` already taken |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Photo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Profile photo file. Allowed mime types and size limits are enforced by the storage layer (jpeg/png/webp; ~5MB)."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/me/photo",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "me", "photo"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| photo | file | YES | Single file upload (multipart/form-data). Replaces any existing photo. |\n\n### Notes\nReplaces the previous photo if one exists. Subject to the upload throttle.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 413 | File too large |\n| 415 | Unsupported media type |\n| 429 | Upload throttle exceeded |"
+          },
+          "response": []
+        },
+        {
+          "name": "Find Me",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "me"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone — reads the principal from the access token.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

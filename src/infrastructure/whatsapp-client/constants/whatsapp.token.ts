@@ -1,0 +1,1 @@
+export const WHATSAPP_NOTIFIER = Symbol('WHATSAPP_NOTIFIER');

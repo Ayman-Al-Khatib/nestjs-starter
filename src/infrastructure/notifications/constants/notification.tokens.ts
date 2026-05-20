@@ -1,0 +1,2 @@
+export const NOTIFICATION_PROVIDER = Symbol('NOTIFICATION_PROVIDER');
+export const FIREBASE_ADMIN = Symbol('FIREBASE_ADMIN');

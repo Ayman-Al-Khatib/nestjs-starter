@@ -1,0 +1,8 @@
+{
+    "errors": {
+        "invalid_credentials": "Invalid username or password.",
+        "username_taken": "This username is already in use.",
+        "current_password_required": "Current password is required to change credentials.",
+        "current_password_incorrect": "Current password is incorrect."
+    }
+}

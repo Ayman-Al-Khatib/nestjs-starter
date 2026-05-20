@@ -1,0 +1,63 @@
+{
+    "validation": {
+        "storage_file": {
+            "not_found": "The specified file does not exist.",
+            "not_found_multiple": "One or more of the specified files do not exist."
+        },
+        "id": {
+            "array": "{property} must be a list.",
+            "empty": "{property} cannot be empty.",
+            "integer": "{property} must be an integer.",
+            "positive": "{property} must be a positive number."
+        },
+        "string": {
+            "invalid": "{property} must be a string.",
+            "empty": "{property} cannot be empty.",
+            "too_short": "{property} is too short.",
+            "too_long": "{property} is too long."
+        },
+        "boolean": {
+            "invalid": "{property} must be true or false.",
+            "required": "{property} is required."
+        },
+        "phone": {
+            "invalid_syria": "{property} must be a valid Syrian phone number (MTN: 94, 95, 96 — Syriatel: 93, 98, 99)."
+        },
+        "greater_than": {
+            "invalid": "{property} must be greater than {related}."
+        },
+        "greater_than_or_equal": {
+            "invalid": "{property} must be greater than or equal to {related}."
+        },
+        "time": {
+            "invalid_format": "{property} must be a valid time in HH:mm format (00:00–23:59).",
+            "invalid_range": "{property} must be greater than {related}."
+        },
+        "enum": {
+            "invalid": "{property} has an invalid value."
+        },
+        "name": {
+            "invalid": "{property} may only contain Arabic or English letters and single spaces between words."
+        },
+        "date": {
+            "invalid": "{property} must be a valid date.",
+            "must_be_past": "{property} must be a date in the past.",
+            "must_be_utc_iso8601": "{property} must be an ISO-8601 UTC string ending with Z (e.g. 2026-04-28T10:30:00.000Z)."
+        },
+        "number": {
+            "invalid": "{property} must be an integer.",
+            "too_small": "{property} must be at least {min}.",
+            "too_large": "{property} must not exceed {max}."
+        },
+        "timezone": {
+            "invalid": "{property} must be a valid IANA timezone identifier (e.g. Asia/Damascus)."
+        },
+        "array": {
+            "invalid": "{property} must be a list.",
+            "too_large": "{property} must contain at most {max} items."
+        }
+    },
+    "errors": {
+        "too_many_requests": "Too many requests. Please try again later."
+    }
+}

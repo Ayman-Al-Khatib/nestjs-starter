@@ -1,0 +1,123 @@
+{
+  "info": {
+    "_postman_id": "c4d5e6f7-8a9b-4c0d-9e1f-2a3b4c5d6e7f",
+    "name": "Areas",
+    "description": "## Areas\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nPublic list/get endpoints require no token. Admin mutators require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "description": "Admin-only mutators for areas (create, update, delete).",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": 1,\n  \"nameEn\": \"Downtown\",\n  \"nameAr\": \"وسط البلد\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/areas/admin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "areas", "admin"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | number | YES | ID of the parent city. |\n| nameEn | string | YES | English name, max 128 chars. |\n| nameAr | string | YES | Arabic name, max 128 chars. |\n\n### Notes\n`(cityId, nameEn)` and `(cityId, nameAr)` are unique pairs.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | Area name already exists for this city |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cityId\": 1,\n  \"nameEn\": \"Old Downtown\",\n  \"nameAr\": \"وسط البلد القديم\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/areas/admin/:areaId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "areas", "admin", ":areaId"],
+              "variable": [{ "key": "areaId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | number | Optional | Reassign to a different city. |\n| nameEn | string | Optional | New English name. |\n| nameAr | string | Optional | New Arabic name. |\n\n### Notes\nUndefined fields are skipped (no change).\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | Area or city not found |\n| 409 | Area name already exists for this city |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/areas/admin/:areaId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "areas", "admin", ":areaId"],
+              "variable": [{ "key": "areaId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| areaId | path param | YES | Area ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | Area not found |\n| 409 | Area is referenced by other rows and cannot be removed |"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "description": "Public read endpoints for browsing areas.",
+      "item": [
+        {
+          "name": "Find All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/areas?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "areas"],
+              "query": [
+                { "key": "page", "value": "1", "disabled": false },
+                { "key": "limit", "value": "10", "disabled": false },
+                { "key": "search", "value": "downtown", "disabled": true },
+                { "key": "cityId", "value": "1", "disabled": true }
+              ]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| page | number | Optional | Page number (default 1). |\n| limit | number | Optional | Items per page (default 10). |\n| search | string | Optional | Free-text match against `nameEn` / `nameAr`. |\n| cityId | number | Optional | Filter by parent city. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Find One",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/areas/:areaId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "areas", ":areaId"],
+              "variable": [{ "key": "areaId", "value": "1" }]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| areaId | path param | YES | Area ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 404 | Area not found |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

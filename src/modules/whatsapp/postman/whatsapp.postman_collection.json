@@ -1,0 +1,93 @@
+{
+  "info": {
+    "_postman_id": "08192a3b-cd3e-4f40-9162-7c8d9e0f1a2b",
+    "name": "Whatsapp",
+    "description": "## Whatsapp\n\nAdmin-only WhatsApp session management. All endpoints return `503` when `WHATSAPP_DRIVER=stub` — the provider guard short-circuits before the handler.\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nAll endpoints require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "description": "WhatsApp session lifecycle and ad-hoc sending. All requests require an admin access token and a non-stub WhatsApp driver.",
+      "item": [
+        {
+          "name": "Send",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+963944123456\",\n  \"text\": \"Hello from the admin console.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/whatsapp/send",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "whatsapp", "send"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| phone | string | YES | Syrian phone, normalized to international form. |\n| text | string | YES | Message body, up to 4096 chars. |\n\n### Notes\nRoutes through the same paced queue OTPs use, so rapid manual triggers can't bypass the anti-ban throttle. Returns `202 Accepted` with a queue position — delivery is asynchronous.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 422 | Validation failed |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/whatsapp/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "whatsapp", "logout"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone — operates on the server's persisted Baileys session.\n\n### Notes\nUnpairs the WhatsApp account and wipes local credentials, freeing `/qr` to pair a different phone number.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+          },
+          "response": []
+        },
+        {
+          "name": "Get QR",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/whatsapp/qr",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "whatsapp", "qr"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone.\n\n### Notes\nReturns the current pairing QR code as a base64 data URL. Scan from the WhatsApp mobile app under *Linked devices* to pair this server.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Status",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/whatsapp/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "whatsapp", "status"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\nNone.\n\n### Notes\nReturns `{ connected, paired }` — `connected` is the live socket state, `paired` reflects whether persisted credentials exist on disk.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 503 | `WHATSAPP_DRIVER=stub` — endpoint disabled |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "info": {
+    "_postman_id": "d5e6f708-9a0b-4c1d-8e2f-3a4b5c6d7e8f",
+    "name": "Cities",
+    "description": "## Cities\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nPublic list/get endpoints require no token. Admin mutators require `Authorization: Bearer {{admin_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "description": "Admin-only mutators for cities (create, update, delete).",
+      "item": [
+        {
+          "name": "Create",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameEn\": \"Damascus\",\n  \"nameAr\": \"دمشق\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cities/admin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cities", "admin"]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| nameEn | string | YES | English name, max 128 chars. Globally unique. |\n| nameAr | string | YES | Arabic name, max 128 chars. Globally unique. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 409 | City name (en or ar) already exists |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameEn\": \"Old Damascus\",\n  \"nameAr\": \"دمشق القديمة\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cities/admin/:cityId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cities", "admin", ":cityId"],
+              "variable": [{ "key": "cityId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| nameEn | string | Optional | New English name. |\n| nameAr | string | Optional | New Arabic name. |\n\n### Notes\nOmitted fields are left unchanged.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | City name (en or ar) already exists |\n| 422 | Validation failed |"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cities/admin/:cityId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cities", "admin", ":cityId"],
+              "variable": [{ "key": "cityId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | path param | YES | City ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | City not found |\n| 409 | City is referenced by other rows (areas, users) and cannot be removed |"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Public",
+      "description": "Public read endpoints for browsing cities.",
+      "item": [
+        {
+          "name": "Find All",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cities"]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\nNone — returns the full list of cities (unpaginated lookup).\n\n### Errors\nNone in the normal path."
+          },
+          "response": []
+        },
+        {
+          "name": "Find One",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cities/:cityId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cities", ":cityId"],
+              "variable": [{ "key": "cityId", "value": "1" }]
+            },
+            "description": "### Auth\nNone — public.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| cityId | path param | YES | City ID. |\n\n### Errors\n| Code | Reason |\n|---|---|\n| 404 | City not found |"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
