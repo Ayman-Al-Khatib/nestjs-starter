@@ -29,3 +29,10 @@ export const DEFAULT_COMPRESSION_POLICY: CompressionPolicy = {
 };
 
 export const DEFAULT_SIGNED_URL_TTL_SECONDS = 3600;
+
+// Coarse network-level backstop enforced by Multer BEFORE a file is fully
+// buffered into memory. Sits above the largest per-route ValidationPolicy
+// maxSize (mp4 = 20MB) so the fine-grained, i18n-aware validators still emit
+// the per-type "file too large" error for normal oversize uploads — Multer
+// only aborts abusive uploads that would otherwise exhaust process memory.
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
