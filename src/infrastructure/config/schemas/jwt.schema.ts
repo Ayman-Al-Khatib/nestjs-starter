@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 export const jwtSchema = z.object({
-  JWT_ACCESS_SECRET: z.string().min(16),
+  // HS256 signing key. Minimum 32 chars so the secret has at least the
+  // entropy of the HMAC-SHA256 output it keys; shorter secrets weaken the MAC.
+  JWT_ACCESS_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES_IN_SECONDS: z.coerce.number().int().positive(),
 
   JWT_REFRESH_EXPIRES_IN_SECONDS: z.coerce.number().int().positive(),

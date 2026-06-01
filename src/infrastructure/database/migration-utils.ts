@@ -11,6 +11,21 @@ export function getConnectionSchema(queryRunner: QueryRunner): string {
 }
 
 /**
+ * Creates the connection's configured schema when it does not exist.
+ *
+ * Production databases are provisioned out-of-band and the dev-only
+ * `ensureDatabaseAndSchemaExist` bootstrap never runs there, so a fresh
+ * deployment can land with the target schema missing. Without this guard
+ * the first migration's unqualified `CREATE TABLE` fails with Postgres
+ * `3F000: no schema has been selected to create in`. Idempotent, so it is
+ * a no-op on environments where the schema already exists.
+ */
+export async function createSchemaIfNotExists(queryRunner: QueryRunner): Promise<void> {
+  const schema = getConnectionSchema(queryRunner);
+  await queryRunner.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+}
+
+/**
  * Scopes the current session's `search_path` to the connection's
  * configured schema. After this call, unqualified DDL/DML in the
  * migration resolves to that schema rather than `public`.

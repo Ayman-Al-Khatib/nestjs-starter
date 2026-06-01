@@ -1,10 +1,14 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
-import { scopeToConnectionSchema } from 'infrastructure/database/migration-utils';
+import {
+  createSchemaIfNotExists,
+  scopeToConnectionSchema,
+} from 'infrastructure/database/migration-utils';
 
 export class Init1747600000001 implements MigrationInterface {
   name = 'Init1747600000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    await createSchemaIfNotExists(queryRunner);
     await scopeToConnectionSchema(queryRunner);
 
     // ---------- Enums ----------

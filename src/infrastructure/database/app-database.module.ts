@@ -4,8 +4,8 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Environment } from '../config/env.constant';
 import { EnvironmentConfig } from '../config/env.schema';
 import { DatabaseConfig } from '../config/schemas';
-import { ensureDatabaseAndSchemaExist } from './app-database.bootstrap';
-import { buildTypeOrmModuleOptions } from './app-database.options';
+import { ensureDatabaseAndSchemaExist, ensureSchemaExists } from './app-database.bootstrap';
+import { buildSslOptions, buildTypeOrmModuleOptions } from './app-database.options';
 
 @Module({
   imports: [
@@ -25,6 +25,11 @@ async function createTypeOrmModuleOptions(
 
   if (env === Environment.DEVELOPMENT) {
     await ensureDatabaseAndSchemaExist(config);
+  } else {
+    // The database is provisioned out-of-band, but the target schema may not
+    // exist yet. Create it before TypeORM connects with migrationsRun — it
+    // writes its migrations table into this schema and fails if it's missing.
+    await ensureSchemaExists(config, buildSslOptions(env, config));
   }
 
   return buildTypeOrmModuleOptions({ env, config });
@@ -40,5 +45,7 @@ function readDatabaseConfig(
     DB_PASSWORD: configService.getOrThrow<string>('DB_PASSWORD'),
     DB_NAME: configService.getOrThrow<string>('DB_NAME'),
     DB_SCHEMA: configService.getOrThrow<string>('DB_SCHEMA'),
+    DB_SSL_REJECT_UNAUTHORIZED: configService.getOrThrow<boolean>('DB_SSL_REJECT_UNAUTHORIZED'),
+    DB_SSL_CA: configService.get<string>('DB_SSL_CA'),
   };
 }

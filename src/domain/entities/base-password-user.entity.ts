@@ -7,7 +7,10 @@ import { BaseAccountEntity } from './base-account.entity';
  * BaseAccountEntity directly and never inherit a password column.
  */
 export abstract class BasePasswordUserEntity extends BaseAccountEntity {
-  @Column({ type: 'varchar' })
+  // select:false keeps the hash out of default reads — it never reaches the
+  // auth-user cache (Redis) or any accidental entity serialization. The two
+  // paths that need it (login, credential change) opt in via addSelect.
+  @Column({ type: 'varchar', select: false })
   password: string;
 
   @Column({ type: 'timestamptz', nullable: true, name: 'password_changed_at' })

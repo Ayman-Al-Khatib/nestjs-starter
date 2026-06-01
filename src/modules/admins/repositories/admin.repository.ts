@@ -19,8 +19,22 @@ export class AdminRepository {
     return this.repo.findOne({ where: { id } });
   }
 
+  /** Includes the (normally `select:false`) password hash — for login only. */
   findByUsername(username: string): Promise<AdminEntity | null> {
-    return this.repo.findOne({ where: { username } });
+    return this.repo
+      .createQueryBuilder('admin')
+      .addSelect('admin.password')
+      .where('admin.username = :username', { username })
+      .getOne();
+  }
+
+  /** Includes the password hash — for self-service credential changes only. */
+  findByIdWithPassword(id: number): Promise<AdminEntity | null> {
+    return this.repo
+      .createQueryBuilder('admin')
+      .addSelect('admin.password')
+      .where('admin.id = :id', { id })
+      .getOne();
   }
 
   save(admin: AdminEntity): Promise<AdminEntity> {

@@ -4,7 +4,7 @@ import { Role } from 'domain/enums/role.enum';
 import { EnvironmentConfig } from 'infrastructure/config';
 import { Translator } from 'infrastructure/i18n';
 import { generateOpaqueToken, sha256 } from 'shared/utils';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { RefreshTokenIssueResult } from '../dto/refresh-token-issue.dto';
 import { RefreshTokenRotateResult } from '../dto/refresh-token-rotate-result.dto';
 import { RefreshTokenEntity } from '../entities/refresh-token.entity';
@@ -79,6 +79,11 @@ export class RefreshTokenService {
     const now = new Date();
 
     // Atomic: insert new token row + revoke old row in one transaction.
+    // The revoke is conditional on the old row still being active — if two
+    // requests present the same token concurrently, only the one whose
+    // UPDATE matches `revokedAt IS NULL` wins; the loser's whole transaction
+    // (including its freshly inserted row) rolls back. Without this guard
+    // both would mint a valid token from a single one (double-spend).
     await this.dataSource.transaction(async (manager) => {
       const newRow = manager.create(RefreshTokenEntity, {
         tokenHash: sha256(newToken),
@@ -88,11 +93,19 @@ export class RefreshTokenService {
       });
       const saved = await manager.save(newRow);
 
-      await manager.update(RefreshTokenEntity, { id: row.id }, {
-        revokedAt: now,
-        replacedById: saved.id,
-        lastUsedAt: now,
-      });
+      const result = await manager.update(
+        RefreshTokenEntity,
+        { id: row.id, revokedAt: IsNull() },
+        {
+          revokedAt: now,
+          replacedById: saved.id,
+          lastUsedAt: now,
+        },
+      );
+
+      if (result.affected !== 1) {
+        throw this.invalid();
+      }
     });
 
     return { token: newToken, expiresAt, userId: row.userId, role: row.role };

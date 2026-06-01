@@ -32,9 +32,9 @@ export function buildDataSourceOptions({ env, config }: DatabaseOptionsInput): D
     migrations: [MIGRATIONS_GLOB],
     migrationsTableName: DATABASE_MIGRATIONS_TABLE,
     synchronize: false,
-    migrationsRun: true,
+    migrationsRun: false,
     logging: buildLoggingOptions(env),
-    ssl: buildSslOptions(env),
+    ssl: buildSslOptions(env, config),
   };
 }
 
@@ -67,7 +67,7 @@ export function buildTypeOrmModuleOptions({
     synchronize: isDevelopment,
     migrationsRun: !isDevelopment,
     logging: buildLoggingOptions(env),
-    ssl: buildSslOptions(env),
+    ssl: buildSslOptions(env, config),
     retryAttempts: DATABASE_STARTUP.RETRY_ATTEMPTS,
     retryDelay: DATABASE_STARTUP.RETRY_DELAY_MS,
   };
@@ -98,6 +98,12 @@ function buildLoggingOptions(env: Environment): LoggerOptions {
   return env === Environment.PRODUCTION ? ['error'] : ['error', 'warn', 'migration'];
 }
 
-function buildSslOptions(env: Environment) {
-  return env === Environment.PRODUCTION ? { rejectUnauthorized: false } : false;
+export function buildSslOptions(env: Environment, config: DatabaseConfig) {
+  if (env !== Environment.PRODUCTION) {
+    return false;
+  }
+  return {
+    rejectUnauthorized: config.DB_SSL_REJECT_UNAUTHORIZED,
+    ...(config.DB_SSL_CA ? { ca: config.DB_SSL_CA } : {}),
+  };
 }
