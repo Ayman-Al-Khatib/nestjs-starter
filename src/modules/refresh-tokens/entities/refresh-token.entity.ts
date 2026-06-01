@@ -20,6 +20,7 @@ import {
 @Entity({ name: 'refresh_tokens' })
 @Index('idx_refresh_token_hash', ['tokenHash'], { unique: true })
 @Index(['userId', 'role'])
+@Index('IDX_refresh_tokens_expires_at', ['expiresAt'])
 export class RefreshTokenEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id: string;

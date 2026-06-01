@@ -1,10 +1,12 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Public } from 'core/decorators/public.decorator';
 import { AuthThrottle } from 'infrastructure/throttle';
 
 import { AdminLoginResponseDto } from '../dto/admin-login-response.dto';
 import { AdminLoginDto } from '../dto/admin-login.dto';
 import { AdminAuthService } from '../services/admin-auth.service';
 
+@Public()
 @Controller({ path: 'auth/admin', version: '1' })
 export class AdminAuthController {
   constructor(private readonly adminAuthService: AdminAuthService) {}

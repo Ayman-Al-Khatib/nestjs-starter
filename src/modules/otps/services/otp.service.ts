@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as crypto from 'crypto';
 import { EnvironmentConfig } from 'infrastructure/config';
 import { Translator } from 'infrastructure/i18n';
@@ -132,6 +133,18 @@ export class OtpService {
     }
 
     await this.otpRepo.markConsumed(otp.id, new Date());
+  }
+
+  /**
+   * Nightly housekeeping: drop OTP rows older than every rolling window this
+   * service counts over, so the table stays bounded without resetting an
+   * in-flight issue-rate or phone-lock count.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async pruneStaleOtps(): Promise<void> {
+    const retentionSeconds = Math.max(this.phoneLockWindowSeconds, this.issueWindowSeconds);
+    const cutoff = new Date(Date.now() - retentionSeconds * 1000);
+    await this.otpRepo.deleteCreatedBefore(cutoff);
   }
 
   private generateCode(): string {

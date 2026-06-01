@@ -11,6 +11,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { Protected } from 'core/decorators/protected.decorator';
+import { Public } from 'core/decorators/public.decorator';
 import { Role } from 'domain/enums/role.enum';
 import { IPaginatedResponse } from 'core/pagination/interfaces/paginated-response.interface';
 import { mapPaginated } from 'core/pagination/paginate.util';
@@ -31,12 +32,14 @@ export class AreaController {
 
   // ---------- Public (guest-accessible) ----------
 
+  @Public()
   @Get()
   async findAll(@Query() query: ListAreasQueryDto): Promise<IPaginatedResponse<AreaResponseDto>> {
     const result = await this.areaService.list(query);
     return mapPaginated(result, AreaResponseDto.fromEntity);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', PositiveIntPipe) id: number): Promise<AreaResponseDto> {
     const area = await this.areaService.findByIdOrFail(id);

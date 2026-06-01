@@ -6,6 +6,7 @@ import {
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Public } from 'core/decorators/public.decorator';
 
 /**
  * Liveness + readiness probes for load balancers and orchestrators (k8s).
@@ -19,6 +20,7 @@ import { SkipThrottle } from '@nestjs/throttler';
  * versioning router. SkipThrottle keeps high-frequency probes from eating
  * the per-IP rate-limit budget.
  */
+@Public()
 @SkipThrottle()
 @Controller('healthz')
 export class HealthController {

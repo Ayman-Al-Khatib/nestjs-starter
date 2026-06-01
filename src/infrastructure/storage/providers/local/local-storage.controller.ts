@@ -13,12 +13,14 @@ import type { Response } from 'express';
 import { createReadStream } from 'fs';
 import { stat } from 'fs/promises';
 import * as path from 'path';
+import { Public } from 'core/decorators/public.decorator';
 import { Visibility } from '../../core/enums/visibility.enum';
 import { mimeFromExtension } from '../../utils/mime.util';
 import { LOCAL_STORAGE_ROUTE } from './local.constants';
 import { LocalStreamGuard } from './local-stream.guard';
 import { LOCAL_STORAGE_BASE_PATH } from './local.tokens';
 
+@Public()
 @Controller({ path: LOCAL_STORAGE_ROUTE, version: VERSION_NEUTRAL })
 export class LocalStorageController {
   private readonly logger = new Logger(LocalStorageController.name);

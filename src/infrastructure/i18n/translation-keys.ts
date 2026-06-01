@@ -133,6 +133,7 @@ const TranslationKeys = {
   'area.errors.name_ar_taken': 'area.errors.name_ar_taken',
   'area.errors.name_en_taken': 'area.errors.name_en_taken',
   'area.errors.not_found': 'area.errors.not_found',
+  'auth.errors.account_disabled': 'auth.errors.account_disabled',
   'auth.errors.account_not_found': 'auth.errors.account_not_found',
   'auth.errors.auth_resolver_not_configured': 'auth.errors.auth_resolver_not_configured',
   'auth.errors.forbidden_role': 'auth.errors.forbidden_role',
@@ -209,6 +210,7 @@ export interface TranslationInterpolations {
   'area.errors.name_ar_taken': NoParams;
   'area.errors.name_en_taken': NoParams;
   'area.errors.not_found': NoParams;
+  'auth.errors.account_disabled': NoParams;
   'auth.errors.account_not_found': NoParams;
   'auth.errors.auth_resolver_not_configured': NoParams;
   'auth.errors.forbidden_role': NoParams;

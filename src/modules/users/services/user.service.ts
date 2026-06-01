@@ -10,6 +10,8 @@ import { UserResolverRegistry } from 'core/auth/user-resolver.registry';
 import { Role } from 'domain/enums/role.enum';
 import { IPaginatedResponse } from 'core/pagination/interfaces/paginated-response.interface';
 import { CityService } from 'modules/cities/services/city.service';
+import { RefreshTokenService } from 'modules/refresh-tokens/services/refresh-token.service';
+import { CacheKeys, CacheService } from 'infrastructure/cache';
 import { Translator } from 'infrastructure/i18n';
 import { Visibility } from 'infrastructure/storage/core/enums/visibility.enum';
 import { MulterAdapter, MulterFile } from 'infrastructure/storage/http/multer.adapter';
@@ -35,6 +37,8 @@ export class UserService implements OnModuleInit, AuthUserResolver<UserEntity> {
     private readonly cityService: CityService,
     private readonly storageService: StorageService,
     private readonly translator: Translator,
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly cacheService: CacheService,
   ) {}
 
   onModuleInit(): void {
@@ -141,6 +145,24 @@ export class UserService implements OnModuleInit, AuthUserResolver<UserEntity> {
       isProfileCompleted: true,
     });
     return this.userRepository.save(user);
+  }
+
+  /**
+   * Disables a user: blocks future authentication, kills active sessions, and
+   * drops the cached principal so the change takes effect on the next request
+   * rather than after the auth-cache TTL.
+   */
+  async deactivateByAdmin(id: number): Promise<UserEntity> {
+    const user = await this.findByIdOrFail(id);
+    const updated = await this.userRepository.mergeAndSave(user, { isActive: false });
+    await this.refreshTokenService.revokeAllForUser(id, Role.USER);
+    await this.cacheService.delete(CacheKeys.authUser(Role.USER, id));
+    return updated;
+  }
+
+  async activateByAdmin(id: number): Promise<UserEntity> {
+    const user = await this.findByIdOrFail(id);
+    return this.userRepository.mergeAndSave(user, { isActive: true });
   }
 
   // ---------- Cross-module assertions ----------

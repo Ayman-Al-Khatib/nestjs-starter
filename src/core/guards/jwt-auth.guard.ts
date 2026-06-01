@@ -11,6 +11,7 @@ import { Request } from 'express';
 
 import { UserResolverRegistry } from 'core/auth/user-resolver.registry';
 import { ROLES_KEY } from 'core/decorators/protected.decorator';
+import { IS_PUBLIC_KEY } from 'core/decorators/public.decorator';
 import { BaseAccountEntity } from 'domain/entities/base-account.entity';
 import { Role } from 'domain/enums/role.enum';
 import { CacheKeys, CacheService, CacheTtl } from 'infrastructure/cache';
@@ -32,6 +33,10 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (this.isPublic(context)) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<Request>();
 
     const token = this.extractBearerToken(request);
@@ -67,9 +72,21 @@ export class JwtAuthGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException(this.translator.tr('auth.errors.account_not_found'));
     }
+    if (user.isActive === false) {
+      throw new UnauthorizedException(this.translator.tr('auth.errors.account_disabled'));
+    }
 
     request.user = user;
     return true;
+  }
+
+  private isPublic(context: ExecutionContext): boolean {
+    return (
+      this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) === true
+    );
   }
 
   private verifyToken(token: string): DecodedAccessTokenPayload {

@@ -1,5 +1,6 @@
 import { Role } from 'domain/enums/role.enum';
 import {
+  Column,
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -19,6 +20,14 @@ export abstract class BaseAccountEntity {
 
   @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
+
+  /**
+   * Soft account gate. The auth guard rejects principals whose account is
+   * inactive, so deactivating an account revokes access without deleting the
+   * row (and its history). Defaults to active.
+   */
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
+  isActive: boolean;
 
   /**
    * Subclasses MUST decorate their override with `@Expose()` from

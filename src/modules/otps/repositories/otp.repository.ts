@@ -61,6 +61,20 @@ export class OtpRepository {
   }
 
   /**
+   * Hard-deletes rows created before `cutoff`. The cutoff must sit beyond every
+   * rolling window OtpService counts over (issue-rate and phone-lock), so
+   * pruning never resets an in-flight rate limit.
+   */
+  async deleteCreatedBefore(cutoff: Date): Promise<number> {
+    const result = await this.repo
+      .createQueryBuilder()
+      .delete()
+      .where('created_at < :cutoff', { cutoff })
+      .execute();
+    return result.affected ?? 0;
+  }
+
+  /**
    * Sum of `attempts` across all OTP rows for the phone+purpose whose
    * `createdAt` is at or after `since`. Used by OtpService to enforce a
    * rolling per-phone failure cap independent of per-code caps.

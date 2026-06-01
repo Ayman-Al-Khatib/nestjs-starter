@@ -13,6 +13,7 @@ import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 // ========================================
 // Third-Party Imports (i18n)
 // ========================================
+import { ScheduleModule } from '@nestjs/schedule';
 import { i18nValidationErrorFactory } from 'nestjs-i18n';
 
 // ========================================
@@ -57,6 +58,7 @@ import { AppThrottleModule } from './infrastructure/throttle';
   imports: [
     // Core Infrastructure
     AppConfigModule,
+    ScheduleModule.forRoot(),
     AppThrottleModule,
     AppI18nModule,
     AppDatabaseModule,

@@ -1,5 +1,6 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Role } from 'domain/enums/role.enum';
 import { EnvironmentConfig } from 'infrastructure/config';
 import { Translator } from 'infrastructure/i18n';
@@ -119,6 +120,12 @@ export class RefreshTokenService {
 
   revokeAllForUser(userId: number, role: Role): Promise<void> {
     return this.repo.revokeAllForUser(userId, role, new Date());
+  }
+
+  /** Nightly housekeeping: drop expired token rows so the table stays bounded. */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async pruneExpiredTokens(): Promise<void> {
+    await this.repo.deleteExpiredBefore(new Date());
   }
 
   private async lookup(presentedToken: string): Promise<RefreshTokenEntity> {
