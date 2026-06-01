@@ -93,3 +93,6 @@ ide/*
 scripts/generate-postman.ts
 collection.json
 apis.ts
+
+# Local-only audit report (kept on disk, untracked)
+README_AUDIT.md
