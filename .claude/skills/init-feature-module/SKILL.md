@@ -2,23 +2,23 @@
 name: init-feature-module
 description: Scaffold a feature module under src/modules/<plural>/ — entity, repository, service, audience-scoped controllers, DTOs, i18n stub, AppModule wiring. Triggers: "create a new module", "scaffold feature X", "/init-feature-module", new domain entity with API surface.
 user-invocable: true
-argument-hint: <FeatureName> [--entity <EntityName>] [--audiences admin,doctor,patient] [--no-controller]
+argument-hint: <FeatureName> [--entity <EntityName>] [--audiences admin,user,public] [--no-controller]
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 
 # Init Feature Module
 
-Output must match existing modules (`appointment`, `clinic`, `patient`) in shape and naming. Naming details: @../naming-conventions/SKILL.md.
+Output must match existing modules (`cities`, `areas`, `users`) in shape and naming. Naming details: @../naming-conventions/SKILL.md.
 
 ## Arguments
-- `<FeatureName>` — kebab-case **singular** (`medical-record`). Pluralised for folder/module class (`medical-records/`, `MedicalRecordsModule`); singular for entity/service/controller files.
+- `<FeatureName>` — kebab-case **singular** (`refresh-token`). Pluralised for folder/module class (`refresh-tokens/`, `RefreshTokensModule`); singular for entity/service/controller files.
 - `--entity <EntityName>` — primary entity class. Default: `<Feature>Entity`.
-- `--audiences <list>` — comma-separated subset of `admin,doctor,patient,public`. Default: `admin`; ask once if ambiguous.
+- `--audiences <list>` — comma-separated subset of `admin,user,public`. Default: `admin`; ask once if ambiguous.
 - `--no-controller` — skip controller generation (internal-only module).
 
 ## Phase 1 — Validate and plan
 1. `Glob src/modules/<plural>/` — if exists, stop and tell the user.
-2. Skim 1–2 sibling modules (`appointment`, `rating`): their `*.module.ts`, an entity, a repository, one controller — to mirror current style (decorator order, `version: '1'`, `@HttpCode`, response DTO mapping).
+2. Skim 1–2 sibling modules (`cities`, `areas`): their `*.module.ts`, an entity, a repository, one controller — to mirror current style (decorator order, `version: '1'`, `@HttpCode`, response DTO mapping).
 3. Confirm planned file set in one line; ask only if audience scope is ambiguous.
 
 ## Phase 2 — Generate files
@@ -28,8 +28,8 @@ src/modules/<plural>/
 ├── <plural>.module.ts           # class: <Plural>Module
 ├── controllers/                 # one per audience
 │   ├── admin-<feature>.controller.ts
-│   ├── doctor-<feature>.controller.ts
-│   └── patient-<feature>.controller.ts
+│   ├── user-<feature>.controller.ts
+│   └── <feature>.controller.ts   # public, audience-agnostic
 ├── dto/
 │   ├── create-<feature>.dto.ts
 │   ├── update-<feature>.dto.ts
@@ -44,7 +44,7 @@ src/modules/<plural>/
 File-shape rules per file kind: @file-shapes.md.
 
 ## Phase 3 — i18n stub
-Create `src/infrastructure/i18n/translations/{ar,en}/<feature>.json` (use `appointment.json` as reference):
+Create `src/infrastructure/i18n/translations/{ar,en}/<feature>.json` (use `city.json` as reference):
 
 ```json
 { "errors": { "not_found": "{Feature} not found." } }

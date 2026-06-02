@@ -24,8 +24,9 @@
     "paths": {
       "*": ["./src/*"]
     },
-    "typeRoots": ["./node_modules/@types", "./src/shared/types"]
+    "typeRoots": ["./node_modules/@types", "./src/shared/types"],
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "test", "scripts", "dist", "**/*.spec.ts"]
+  "exclude": ["node_modules", "test", "scripts", "dist"]
 }

@@ -18,9 +18,17 @@ import { EnvironmentConfig } from 'infrastructure/config';
 import { AppModule } from './app.module';
 
 const DEFAULT_PORT = 3000;
-const LOG_LEVELS: LogLevel[] = ['error', 'debug', 'log', 'verbose', 'fatal'];
+const LOG_LEVELS: LogLevel[] = ['error', 'debug', 'log', 'verbose', 'fatal', 'warn'];
 
 function resolvePort(app: INestApplication): number {
+  // Honor a platform-injected PORT (Render / Railway / Heroku / Cloud Run)
+  // first, then the validated APP_PORT, then the default. Without this, a
+  // platform that assigns a dynamic PORT would be ignored and health checks
+  // against that port would fail.
+  const platformPort = Number(process.env.PORT);
+  if (Number.isInteger(platformPort) && platformPort > 0) {
+    return platformPort;
+  }
   return app.get(ConfigService).get<number>('APP_PORT', DEFAULT_PORT);
 }
 

@@ -19,7 +19,7 @@ export const cacheSchema = z.object({
 
   // Prefix prepended to every key so multiple apps sharing one Redis can
   // coexist without colliding. Trailing ':' is added automatically.
-  REDIS_KEY_PREFIX: z.string().default('eldar-dental'),
+  REDIS_KEY_PREFIX: z.string().default('nestjs-starter'),
 });
 
 const REDIS_REQUIRED_KEYS = ['REDIS_HOST', 'REDIS_PORT'] as const;

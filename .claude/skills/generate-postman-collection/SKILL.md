@@ -23,9 +23,9 @@ If the file exists → update it. If not → create the `postman/` folder and wr
 
 ## Phase 2 — Build the collection
 
-- **Collection name:** `<Module>` (PascalCase, e.g. `Appointments`).
-- **One folder per controller** (e.g. `Admin`, `Doctor`, `Patient`, `Public`). Folder name = audience prefix.
-- **Request name:** action verb in title case (`Create`, `Update`, `Cancel`, `Find One`, `Find All`).
+- **Collection name:** `<Module>` (PascalCase, e.g. `Cities`).
+- **One folder per controller** (e.g. `Admin`, `User`, `Public`). Folder name = audience prefix.
+- **Request name:** action verb in title case (`Create`, `Update`, `Activate`, `Find One`, `Find All`).
 - **Request order inside a folder:** Create → Update → Custom actions → Delete → Find All → Find One. Skip what doesn't exist.
 
 ## Phase 3 — Request shape
@@ -34,8 +34,7 @@ Every request uses `{{base_url}}` and the controller's full path (`/api/v1/<role
 
 ### Auth block
 - `@Protected(Role.ADMIN)` → `{{admin_access_token}}`
-- `@Protected(Role.DOCTOR)` → `{{doctor_access_token}}`
-- `@Protected(Role.PATIENT)` → `{{patient_access_token}}`
+- `@Protected(Role.USER)` → `{{user_access_token}}`
 - `@RequireCompletedProfile()` stacked on top → same token as the role under it.
 - No `@Protected` → omit `auth` entirely.
 
@@ -64,8 +63,8 @@ Use realistic examples — never `"string"` or `0`:
 | Type | Example |
 |---|---|
 | `number` ID | `1` |
-| `string` name (EN) | `"Downtown Clinic"` |
-| `string` name (AR) | `"عيادة وسط البلد"` |
+| `string` name (EN) | `"Damascus"` |
+| `string` name (AR) | `"دمشق"` |
 | Phone (SY) | `"+963944123456"` |
 | Date / DateTime (ISO-8601) | `"2026-06-15T10:00:00.000Z"` |
 | Time-of-day | `"10:30"` |
@@ -187,7 +186,7 @@ Attach only to auth-issuing / refresh / logout endpoints.
   "info": {
     "_postman_id": "<uuid-v4>",
     "name": "<Module>",
-    "description": "## <Module>\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nProtected endpoints require `Authorization: Bearer {{<role>_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |\n| `doctor_access_token` | Doctor JWT (auto-set on login) |\n| `patient_access_token` | Patient JWT (auto-set on login) |",
+    "description": "## <Module>\n\n### Base URL\n`{{base_url}}/api/v1`\n\n### Authentication\nProtected endpoints require `Authorization: Bearer {{<role>_access_token}}`.\n\n### Environment Variables\n| Variable | Description |\n|---|---|\n| `base_url` | API base URL |\n| `admin_access_token` | Admin JWT (auto-set on login) |\n| `user_access_token` | User JWT (auto-set on login) |",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -214,7 +213,7 @@ Attach only to auth-issuing / refresh / logout endpoints.
 
 ```
 ✓ <created|updated>: src/modules/<module>/postman/<module>.postman_collection.json
-✓ Folders: <Admin|Doctor|Patient|Public> (N requests total)
+✓ Folders: <Admin|User|Public> (N requests total)
 ```
 
 ## Rules

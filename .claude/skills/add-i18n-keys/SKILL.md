@@ -11,8 +11,8 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 Add one or more translation keys to the AR and EN files for a feature, then run the validator that regenerates the typed key list.
 
 ## Arguments
-- `<feature>` — namespace == JSON filename (`appointment`, `clinic`, `patient`, `common`). Snake_case filenames map to dotted keys (`medical_record.json` → `medical_record.<...>`).
-- `<dot.path>` — key path inside the namespace (`errors.not_found`, `success.created`, `validation.start_time.invalid`).
+- `<feature>` — namespace == JSON filename (`city`, `area`, `user`, `common`). Snake_case filenames map to dotted keys (`refresh_token.json` → `refresh_token.<...>`).
+- `<dot.path>` — key path inside the namespace (`errors.not_found`, `success.created`, `validation.phone.invalid`).
 - `<ar-value>` / `<en-value>` — translated strings. Use `{placeholder}` for nestjs-i18n interpolations.
 - Additional `<path> <ar> <en>` triplets are accepted to batch.
 
@@ -68,7 +68,7 @@ The build now type-checks the `Translator.tr('<feature>.<path>')` calls.
 ## Placeholder conventions
 - Property names in validation messages: `{property}` (camelCase DTO property name).
 - Min/max constraints: `{min}`, `{max}` — emitted automatically by `Translator.trValMsg(...)`.
-- Entity names in messages: bake the noun into the text (`"Appointment not found."`), not a `{entity}` placeholder.
+- Entity names in messages: bake the noun into the text (`"City not found."`), not a `{entity}` placeholder.
 
 ## Anti-patterns
 - Editing `infrastructure/i18n/translation-keys.ts`.

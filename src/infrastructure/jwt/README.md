@@ -78,15 +78,15 @@ The only direct consumers are auth services that mint tokens:
 ```ts
 constructor(private readonly jwt: AppJwtService) {}
 
-const accessToken = this.jwt.createAccessToken({ userId: 42, role: Role.PATIENT });
+const accessToken = this.jwt.createAccessToken({ userId: 42, role: Role.USER });
 ```
 
 For protecting routes:
 
 ```ts
-@Protected(Role.DOCTOR)
-@Controller({ path: 'doctor/appointments', version: '1' })
-export class DoctorAppointmentController { /* ... */ }
+@Protected(Role.ADMIN)
+@Controller({ path: 'admin/users', version: '1' })
+export class AdminUserController { /* ... */ }
 ```
 
 See [`core/`](../../core/README.md#auth--protected) for the guard +

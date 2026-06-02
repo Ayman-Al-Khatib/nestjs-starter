@@ -22,6 +22,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "typeorm": "cross-env NODE_ENV=development typeorm-ts-node-commonjs -d src/infrastructure/database/data-source.ts",
     "typeorm:prod": "cross-env NODE_ENV=production node ./node_modules/typeorm/cli.js -d dist/infrastructure/database/data-source.js",
@@ -113,12 +114,54 @@
       ]
     },
     "moduleNameMapper": {
-      "^(core|domain|infrastructure|modules|shared|bootstrap)/(.*)$": "<rootDir>/$1/$2"
+      "^(core|domain|infrastructure|modules|shared|bootstrap|test-utils)/(.*)$": "<rootDir>/$1/$2"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.module.ts",
+      "!**/*.interface.ts",
+      "!**/*.enum.ts",
+      "!**/*.constants.ts",
+      "!**/*.constant.ts",
+      "!**/*.tokens.ts",
+      "!**/*.token.ts",
+      "!**/index.ts",
+      "!**/main.ts",
+      "!**/data-source.ts",
+      "!**/*.d.ts",
+      "!**/migrations/**",
+      "!**/seeders/**",
+      "!**/seed-*.ts",
+      "!**/scripts/**",
+      "!**/test-utils/**",
+      "!**/translation-keys.ts",
+      "!**/*.dto.ts",
+      "!**/*.schema.ts",
+      "!**/*.repository.ts",
+      "!**/bootstrap/**",
+      "!**/app-database.*.ts",
+      "!**/health.controller.ts",
+      "!**/notifications/**",
+      "!**/whatsapp/**",
+      "!**/whatsapp-client/**",
+      "!**/storage/providers/**",
+      "!**/storage/processing/**",
+      "!**/storage/http/decorators/**",
+      "!**/storage/http/pipes/**",
+      "!**/storage/service/**",
+      "!**/i18n.service.ts",
+      "!**/i18n-validation-error.handler.ts",
+      "!**/global-exception.filter.ts"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 85,
+        "functions": 90,
+        "lines": 92,
+        "statements": 92
+      }
+    }
   }
 }

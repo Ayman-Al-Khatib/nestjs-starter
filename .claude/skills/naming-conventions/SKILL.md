@@ -14,28 +14,28 @@ Source of truth for every name in this codebase. If a rule here conflicts with a
 
 | Thing | Case | Number | Example |
 |---|---|---|---|
-| Module folder | `kebab-case` | plural | `src/modules/clinics/` |
+| Module folder | `kebab-case` | plural | `src/modules/cities/` |
 | Sub-folder | `kebab-case` | plural | `controllers/`, `dto/`, `entities/` |
-| File name | `kebab-case` | singular | `clinic.entity.ts`, `create-clinic.dto.ts` |
-| Class | `PascalCase` | singular | `ClinicEntity`, `AdminClinicController` |
+| File name | `kebab-case` | singular | `city.entity.ts`, `create-city.dto.ts` |
+| Class | `PascalCase` | singular | `CityEntity`, `AdminUserController` |
 | Interface (DI contract) | `PascalCase` + `I` | singular | `IPaginatedResponse`, `IAuthUserResolver` |
 | Type alias | `PascalCase` | singular | `MulterFile`, `PaginatedResult` |
-| Enum type | `PascalCase` | singular | `AppointmentStatus`, `Role` |
-| Enum member | `UPPER_SNAKE` | — | `AppointmentStatus.PENDING` |
-| Function / method | `camelCase` | verb | `findById`, `bookForPatient` |
-| Variable / property | `camelCase` | noun | `clinicId`, `startTime` |
-| Boolean | `camelCase` | `is/has` | `isActive`, `hasRating`, `canBook` |
+| Enum type | `PascalCase` | singular | `Role`, `Gender` |
+| Enum member | `UPPER_SNAKE` | — | `Role.ADMIN`, `OtpPurpose.USER_LOGIN` |
+| Function / method | `camelCase` | verb | `findById`, `deactivateByAdmin` |
+| Variable / property | `camelCase` | noun | `cityId`, `createdAt` |
+| Boolean | `camelCase` | `is/has` | `isActive`, `isProfileCompleted` |
 | Constant (truly global) | `UPPER_SNAKE` | — | `MAX_PAGE_SIZE` |
-| DB table | `snake_case` | plural | `clinics`, `clinic_weekly_slots` |
-| DB column | `snake_case` | singular | `doctor_id`, `start_time`, `is_active` |
-| DB FK column | `<entity>_id` | singular | `patient_id`, `clinic_id` |
-| DB enum type | `<col>_enum` | singular | `appointment_status_enum` |
-| DB index | `idx_<tbl>_<cols>` | — | `idx_appointments_clinic_start_end` |
+| DB table | `snake_case` | plural | `cities`, `refresh_tokens` |
+| DB column | `snake_case` | singular | `user_id`, `created_at`, `is_active` |
+| DB FK column | `<entity>_id` | singular | `city_id`, `user_id` |
+| DB enum type | `<col>_enum` | singular | `role_enum` |
+| DB index | `idx_<tbl>_<cols>` | — | `idx_areas_city_id` |
 | DB unique index | `uq_<tbl>_<cols>` | — | `uq_cities_name_en` |
-| i18n namespace | `kebab-case` | singular | `clinic`, `medical-record` |
-| i18n key path | `dot.snake_case` | — | `clinic.errors.not_found` |
-| Migration class | `PascalCase` | — | `CreateClinics1747600000010` |
-| HTTP path segment | `kebab-case` | plural | `/admin/clinics`, `/patient/medical-records` |
+| i18n namespace | `kebab-case` | singular | `city`, `user` |
+| i18n key path | `dot.snake_case` | — | `city.errors.not_found` |
+| Migration class | `PascalCase` | — | `AddIsActiveToAccounts1747600000003` |
+| HTTP path segment | `kebab-case` | plural | `/admin/users`, `/admin/cities` |
 
 The rule: **plural for collections (folders, tables, URL paths); singular for the thing itself (class, file, column).**
 
@@ -56,7 +56,7 @@ The rule: **plural for collections (folders, tables, URL paths); singular for th
 | Soft-delete | `softDelete*` | `archive`, `disable` |
 | Reactivate | `restore*` / `reactivate*` | `revive` |
 | Translate | `translator.tr(...)` | `t`, `i18n`, `localize` |
-| Domain action | domain verb: `book`, `cancel`, `approve`, `rate`, `complete`, `notify`, `seed` | `process`, `handle` |
+| Domain action | domain verb: `activate`, `deactivate`, `complete`, `rotate`, `revoke`, `seed` | `process`, `handle` |
 
 ## Details
 

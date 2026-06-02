@@ -26,7 +26,7 @@ Six categories. Anything outside → delete.
 1. **Non-obvious invariants.** Data property the code relies on but doesn't enforce locally.
    _"endTime is computed at booking time and frozen on the row."_
 2. **Choice rationale where the alternative is plausible.** Always pair with the rejected option.
-   _"RESTRICT (not CASCADE): hard-deleting a doctor must surface the dependency, not silently wipe history."_
+   _"RESTRICT (not CASCADE): hard-deleting a city referenced by areas must surface the dependency, not silently orphan rows."_
 3. **Subtle semantics + tiny example.** Reserve for math/time/concurrency.
    _"Half-open `[start, end)` — 10:00–10:30 and 10:30–11:00 touch but never overlap."_
 4. **External / business constraints.** Regulation, partner API, ops decision. Name the constraint, not the ticket.
@@ -37,7 +37,7 @@ Six categories. Anything outside → delete.
 
 ## Delete on sight
 - Restating the code (`// increment counter` above `counter++`).
-- Naming the caller or current task (`// used by the patient booking flow`, `// added for ticket NEST-417`).
+- Naming the caller or current task (`// used by the user login flow`, `// added for ticket NEST-417`).
 - History (`// removed legacy retry block`, `// was 30s before`). Git knows.
 - Closing-brace labels (`} // end of if`).
 - Section banners with no payload (`// ===== HELPERS =====`).

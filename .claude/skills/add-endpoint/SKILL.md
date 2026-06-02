@@ -2,7 +2,7 @@
 name: add-endpoint
 description: Add an HTTP endpoint to an existing module — updates the audience-scoped controller (creates one if needed), DTO, service method, and i18n keys for any new error messages. Triggers: "add an endpoint", "expose endpoint X on module Y", "add a route to <module>", "/add-endpoint".
 user-invocable: true
-argument-hint: <module> <METHOD> <path> [--audience admin|doctor|patient|public] [--name <handlerName>]
+argument-hint: <module> <METHOD> <path> [--audience admin|user|public] [--name <handlerName>]
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 
@@ -11,7 +11,7 @@ allowed-tools: Read, Grep, Glob, Write, Edit, Bash
 Add a new endpoint to an existing module without breaking surrounding conventions.
 
 ## Arguments
-- `<module>` — plural folder under `src/modules/` (kebab-case, `clinics`, `medical-records`). Singular form is rewritten to plural.
+- `<module>` — plural folder under `src/modules/` (kebab-case, `cities`, `users`). Singular form is rewritten to plural.
 - `<METHOD>` — `GET | POST | PATCH | PUT | DELETE`.
 - `<path>` — full route or suffix appended to the controller base. `:id` placeholders honored.
 - `--audience <kind>` — target controller. If omitted, infer from path (`admin/...` → admin).
@@ -65,7 +65,7 @@ async findAll(
 
 Rules:
 - `@Param('id', PositiveIntPipe) id: number` for ID params.
-- `@CurrentUser() <role>: <Role>Entity` only when the audience needs the caller (patient/doctor scope checks).
+- `@CurrentUser() <role>: <Role>Entity` only when the audience needs the caller (user scope checks).
 - `@HttpCode(HttpStatus.CREATED)` on POST creates.
 - Never `@Req()` / `@Res()` — rely on decorators.
 - Imports use path aliases.

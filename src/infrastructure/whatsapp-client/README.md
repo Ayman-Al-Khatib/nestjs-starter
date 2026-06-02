@@ -1,13 +1,13 @@
 # WhatsApp Client
 
-Outbound WhatsApp messaging — OTPs and appointment lifecycle updates.
-Feature code injects the `WHATSAPP_NOTIFIER` token and never touches
-Baileys directly.
+Outbound WhatsApp messaging (OTP delivery). Feature code injects the
+`WHATSAPP_NOTIFIER` token and never touches Baileys directly. Extend
+`IWhatsAppNotifier` with more message types as your domain needs them.
 
 ## Layers
 
 ```
-Feature code (OtpService, AppointmentNotificationService)
+Feature code (e.g. OtpService)
         │   IWhatsAppNotifier
         ▼
 WHATSAPP_NOTIFIER  ──►  BaileysWhatsAppNotifier  ──►  WhatsappQueueService
@@ -16,7 +16,7 @@ WHATSAPP_NOTIFIER  ──►  BaileysWhatsAppNotifier  ──►  WhatsappQueueS
 ```
 
 - **`interfaces/whatsapp-notifier.interface.ts`** — `IWhatsAppNotifier`
-  contract: `sendOtp`, `sendAppointment{Accepted,Rejected,Review,NoShow,Cancelled}`.
+  contract: `sendOtp`. Add more methods here as your domain needs them.
 - **`providers/baileys-whatsapp.notifier.ts`** — real driver. Owns the
   Arabic message copy; enqueues into `WhatsappQueueService`.
 - **`providers/stub-whatsapp.notifier.ts`** — logs and returns success;
@@ -44,7 +44,6 @@ WHATSAPP_NOTIFIER  ──►  BaileysWhatsAppNotifier  ──►  WhatsappQueueS
 constructor(@Inject(WHATSAPP_NOTIFIER) private readonly whatsapp: IWhatsAppNotifier) {}
 
 await this.whatsapp.sendOtp(phone, code);
-await this.whatsapp.sendAppointmentAccepted(phone, doctorName, appointmentDate);
 ```
 
 Each call returns `{ messageId, dispatchedAt }` — `messageId` is the
@@ -79,5 +78,5 @@ status. State is persisted to disk between restarts.
 3. Route to the new provider inside the `WHATSAPP_NOTIFIER` factory in
    [whatsapp.module.ts](whatsapp.module.ts).
 
-The interface keeps the message catalogue (OTP + appointment events)
-stable so feature code is untouched.
+The interface keeps the message contract (e.g. `sendOtp`) stable so
+feature code is untouched when the underlying provider changes.

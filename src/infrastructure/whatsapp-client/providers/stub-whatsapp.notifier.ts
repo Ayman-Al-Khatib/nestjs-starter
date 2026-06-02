@@ -13,61 +13,6 @@ export class StubWhatsAppNotifier implements IWhatsAppNotifier {
     return this.dispatchResult();
   }
 
-  async sendAppointmentAccepted(
-    phone: string,
-    doctorName: string,
-    appointmentDate: Date,
-  ): Promise<WhatsAppDispatchResult> {
-    this.logger.log(
-      `[WA-STUB] accepted phone=${phone} doctor=${doctorName} date=${appointmentDate.toISOString()}`,
-    );
-    return this.dispatchResult();
-  }
-
-  async sendAppointmentRejected(
-    phone: string,
-    doctorName: string,
-    appointmentDate: Date,
-  ): Promise<WhatsAppDispatchResult> {
-    this.logger.log(
-      `[WA-STUB] rejected phone=${phone} doctor=${doctorName} date=${appointmentDate.toISOString()}`,
-    );
-    return this.dispatchResult();
-  }
-
-  async sendAppointmentReview(
-    phone: string,
-    doctorName: string,
-    appointmentDate: Date,
-  ): Promise<WhatsAppDispatchResult> {
-    this.logger.log(
-      `[WA-STUB] review phone=${phone} doctor=${doctorName} date=${appointmentDate.toISOString()}`,
-    );
-    return this.dispatchResult();
-  }
-
-  async sendAppointmentNoShow(
-    phone: string,
-    doctorName: string,
-    appointmentDate: Date,
-  ): Promise<WhatsAppDispatchResult> {
-    this.logger.log(
-      `[WA-STUB] no_show phone=${phone} doctor=${doctorName} date=${appointmentDate.toISOString()}`,
-    );
-    return this.dispatchResult();
-  }
-
-  async sendAppointmentCancelled(
-    phone: string,
-    doctorName: string,
-    appointmentDate: Date,
-  ): Promise<WhatsAppDispatchResult> {
-    this.logger.log(
-      `[WA-STUB] cancelled phone=${phone} doctor=${doctorName} date=${appointmentDate.toISOString()}`,
-    );
-    return this.dispatchResult();
-  }
-
   private dispatchResult(): WhatsAppDispatchResult {
     return { messageId: `stub-${Date.now()}`, dispatchedAt: new Date() };
   }

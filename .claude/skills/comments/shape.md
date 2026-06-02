@@ -6,9 +6,9 @@
 - Above the code, not end-of-line — unless truly trailing context (e.g. labelling a magic number).
 
 ```ts
-// RESTRICT keeps appointment history intact when a doctor is removed.
-@ManyToOne(() => DoctorEntity, { onDelete: 'RESTRICT' })
-doctor: DoctorEntity;
+// RESTRICT surfaces the dependency when a referenced city is removed.
+@ManyToOne(() => CityEntity, { onDelete: 'RESTRICT' })
+city: CityEntity;
 ```
 
 ## Block (multi-line)
@@ -18,7 +18,7 @@ doctor: DoctorEntity;
 
 ## Doc comments (`/** ... */`)
 Allowed on:
-- Classes / entities with non-obvious lifecycle or state machine (see `AppointmentEntity`).
+- Classes / entities with non-obvious lifecycle or state machine (see `RefreshTokenEntity`).
 - Public service methods whose contract has a precondition or ordering requirement.
 - Exported utils with subtle input/output shape (e.g. `localDayBoundsToUtc`).
 

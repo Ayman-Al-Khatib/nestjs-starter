@@ -1,16 +1,14 @@
 /**
- * Clinic-local timezone math, built on `Intl.DateTimeFormat` (no
- * external libs). Each clinic stores an IANA `timezone` and all
- * working-hour HH:mm strings are interpreted in that timezone. The
- * absolute UTC instants stored in `appointments.start_time` /
- * `end_time` and used by all queries are derived through these
- * helpers — never by string concatenation like `${date}T${HH:mm}Z`.
+ * Local-timezone math, built on `Intl.DateTimeFormat` (no external
+ * libs). Interpret wall-clock `HH:mm` strings in a given IANA timezone
+ * and derive the absolute UTC instants persisted/queried elsewhere —
+ * never by string concatenation like `${date}T${HH:mm}Z`.
  *
  * DST policy: we accept `Intl`'s default resolution. A wall-clock
  * inside a spring-forward gap resolves to the closest valid instant
- * after the jump; a wall-clock inside a fall-back overlap resolves
- * to the first occurrence. Damascus has not observed DST since 2022,
- * so the default `Asia/Damascus` clinic is unaffected.
+ * after the jump; a wall-clock inside a fall-back overlap resolves to
+ * the first occurrence. `Asia/Damascus` has not observed DST since
+ * 2022, so it is unaffected.
  */
 
 export type IanaTz = string;

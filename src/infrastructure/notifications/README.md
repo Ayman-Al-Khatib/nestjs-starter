@@ -48,23 +48,23 @@ constructor(private readonly push: PushNotificationService) {}
 // Single device
 await this.push.sendToToken({
   token: fcmToken,
-  title: 'Appointment confirmed',
-  body: 'Your visit is on Sunday at 10:00.',
-  data: { appointmentId: '42' },
+  title: 'Welcome',
+  body: 'Your account is ready.',
+  data: { userId: '42' },
 });
 
 // Many devices (multicast, batched in groups of 500)
 const { successCount, failureCount, failures } = await this.push.sendToTokens({
-  tokens: doctorDeviceTokens,
-  title: 'New booking',
-  body: 'Mona just booked a 09:30 slot.',
+  tokens: deviceTokens,
+  title: 'New update available',
+  body: 'Tap to learn more.',
 });
 
 // Broadcast by topic
 await this.push.sendToTopic({
   topic: 'announcements',
-  title: 'Clinic closed Friday',
-  body: 'See you Saturday.',
+  title: 'Scheduled maintenance',
+  body: 'The service will be briefly unavailable on Friday.',
 });
 
 await this.push.subscribeToTopic(tokens, 'announcements');
