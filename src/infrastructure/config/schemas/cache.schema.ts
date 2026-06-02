@@ -19,7 +19,7 @@ export const cacheSchema = z.object({
 
   // Prefix prepended to every key so multiple apps sharing one Redis can
   // coexist without colliding. Trailing ':' is added automatically.
-  REDIS_KEY_PREFIX: z.string().default('nestjs-starter'),
+  REDIS_KEY_PREFIX: z.string().min(1),
 });
 
 const REDIS_REQUIRED_KEYS = ['REDIS_HOST', 'REDIS_PORT'] as const;
