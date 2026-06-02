@@ -11,13 +11,14 @@ interface TransformedResponse<T> {
 export class TransformInterceptor<T> implements NestInterceptor<T, TransformedResponse<T>> {
   intercept(_context: ExecutionContext, next: CallHandler<T>): Observable<TransformedResponse<T>> {
     return next.handle().pipe(
-      map((response: any) => {
-        const data = response?.data ?? response;
-        const pagination = response?.pagination;
+      map((response: unknown) => {
+        const envelope = (response ?? {}) as { data?: unknown; pagination?: unknown };
+        const data = (envelope.data ?? response) as T;
+        const pagination = envelope.pagination;
 
         return {
           data,
-          ...(pagination && { pagination }),
+          ...(pagination ? { pagination } : {}),
         };
       }),
     );

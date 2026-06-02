@@ -8,7 +8,6 @@ import { comparePassword, hashPassword } from 'shared/utils';
 
 import { AdminLoginResponseDto } from '../dto/admin-login-response.dto';
 import { AdminLoginDto } from '../dto/admin-login.dto';
-import { AdminResponseDto } from '../dto/admin-response.dto';
 import { AdminEntity } from '../entities/admin.entity';
 import { AdminService } from './admin.service';
 

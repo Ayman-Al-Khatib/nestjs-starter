@@ -43,6 +43,19 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
     return this.adminRepository.findByUsername(username);
   }
 
+  private async findByIdOrFail(id: number): Promise<AdminEntity> {
+    const admin = await this.adminRepository.findById(id);
+    if (!admin) {
+      throw new UnauthorizedException(this.translator.tr('admin.errors.invalid_credentials'));
+    }
+    return admin;
+  }
+
+  /** Drops the cached auth principal so a mutation reflects on the next request. */
+  private invalidateAuthCache(id: number): Promise<void> {
+    return this.cacheService.delete(CacheKeys.authUser(Role.ADMIN, id));
+  }
+
   async resolvePhotoUrl(key: string | null): Promise<string | null> {
     if (!key) return null;
     const { url } = await this.storageService.getAccessUrl(key);
@@ -55,16 +68,22 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
   }
 
   async uploadPhoto(admin: AdminEntity, file: MulterFile): Promise<AdminEntity> {
+    // Reload a managed row: under the Redis auth cache the principal is a plain
+    // JSON object without entity prototype, so writes must target a fresh entity.
+    const current = await this.findByIdOrFail(admin.id);
+
     const stored = await this.storageService.upload(MulterAdapter.toUploadInput(file), {
       visibility: Visibility.PUBLIC,
       folder: 'avatars/admins',
     });
 
-    if (admin.photoKey) {
-      await this.storageService.delete(admin.photoKey).catch(() => undefined);
+    if (current.photoKey) {
+      await this.storageService.delete(current.photoKey).catch(() => undefined);
     }
 
-    return this.adminRepository.mergeAndSave(admin, { photoKey: stored.key });
+    const saved = await this.adminRepository.mergeAndSave(current, { photoKey: stored.key });
+    await this.invalidateAuthCache(saved.id);
+    return saved;
   }
 
   /**
@@ -114,11 +133,12 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
     const saved = await this.adminRepository.mergeAndSave(current, changes);
 
     if (isChangingCredentials) {
-      // Kill every active session and drop the cached principal so the rotated
-      // credentials take effect immediately rather than after the cache TTL.
+      // Rotated credentials kill every active session.
       await this.refreshTokenService.revokeAllForUser(admin.id, Role.ADMIN);
-      await this.cacheService.delete(CacheKeys.authUser(Role.ADMIN, admin.id));
     }
+    // Always drop the cached principal so any profile/credential change takes
+    // effect on the next request rather than after the cache TTL.
+    await this.invalidateAuthCache(admin.id);
 
     return saved;
   }

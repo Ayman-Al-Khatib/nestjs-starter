@@ -32,10 +32,6 @@ export class RefreshTokenRepository {
     return this.repo.findOne({ where: { tokenHash: sha256(plainToken) } });
   }
 
-  async markRotated(id: string, replacedById: string, at: Date): Promise<void> {
-    await this.repo.update({ id }, { revokedAt: at, replacedById, lastUsedAt: at });
-  }
-
   async revoke(id: string, at: Date): Promise<void> {
     await this.repo.update({ id }, { revokedAt: at });
   }

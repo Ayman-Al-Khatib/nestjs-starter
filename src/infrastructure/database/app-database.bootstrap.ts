@@ -70,9 +70,25 @@ export async function ensureSchemaExists(
   try {
     // pg has no parameterized DDL; identifier is operator-controlled (zod-validated env).
     await client.query(`CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(config.DB_SCHEMA)}`);
+  } catch (error) {
+    // Managed Postgres roles sometimes lack CREATE on the database even when the
+    // schema was provisioned out-of-band. Treat that as a no-op when the schema
+    // already exists — only a genuinely missing schema is fatal.
+    const exists = await schemaExists(client, config.DB_SCHEMA);
+    if (!exists) {
+      throw error;
+    }
   } finally {
     await client.end();
   }
+}
+
+async function schemaExists(client: Client, schema: string): Promise<boolean> {
+  const { rowCount } = await client.query(
+    'SELECT 1 FROM information_schema.schemata WHERE schema_name = $1',
+    [schema],
+  );
+  return (rowCount ?? 0) > 0;
 }
 
 function quoteIdentifier(identifier: string): string {

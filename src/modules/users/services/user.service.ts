@@ -98,34 +98,58 @@ export class UserService implements OnModuleInit, AuthUserResolver<UserEntity> {
   }
 
   async uploadPhoto(user: UserEntity, file: MulterFile): Promise<UserEntity> {
+    const current = await this.reloadManaged(user);
+
     const stored = await this.storageService.upload(MulterAdapter.toUploadInput(file), {
       visibility: Visibility.PUBLIC,
       folder: 'avatars/users',
     });
 
-    if (user.photoKey) {
-      await this.storageService.delete(user.photoKey).catch(() => undefined);
+    if (current.photoKey) {
+      await this.storageService.delete(current.photoKey).catch(() => undefined);
     }
 
-    return this.userRepository.mergeAndSave(user, { photoKey: stored.key });
+    const saved = await this.userRepository.mergeAndSave(current, { photoKey: stored.key });
+    await this.invalidateAuthCache(saved.id);
+    return saved;
   }
 
   async updateMe(user: UserEntity, dto: UpdateUserMeDto): Promise<UserEntity> {
     if (dto.cityId !== undefined && dto.cityId !== null) {
       await this.cityService.assertExists(dto.cityId);
     }
-    return this.userRepository.mergeAndSave(user, dto);
+    const current = await this.reloadManaged(user);
+    const saved = await this.userRepository.mergeAndSave(current, dto);
+    await this.invalidateAuthCache(saved.id);
+    return saved;
   }
 
   async completeProfile(user: UserEntity, dto: CompleteUserProfileDto): Promise<UserEntity> {
-    if (user.isProfileCompleted) {
+    const current = await this.reloadManaged(user);
+    if (current.isProfileCompleted) {
       throw new BadRequestException(this.translator.tr('user.errors.profile_already_completed'));
     }
     await this.cityService.assertExists(dto.cityId);
-    return this.userRepository.mergeAndSave(user, {
+    const saved = await this.userRepository.mergeAndSave(current, {
       ...dto,
       isProfileCompleted: true,
     });
+    await this.invalidateAuthCache(saved.id);
+    return saved;
+  }
+
+  /**
+   * Reloads a managed entity for the authenticated principal. The guard's
+   * `request.user` is a plain JSON object under the Redis auth cache (no entity
+   * prototype, dates as strings); writes must target a freshly loaded row.
+   */
+  private async reloadManaged(user: UserEntity): Promise<UserEntity> {
+    return this.findByIdOrFail(user.id);
+  }
+
+  /** Drops the cached auth principal so a mutation reflects on the next request. */
+  private invalidateAuthCache(id: number): Promise<void> {
+    return this.cacheService.delete(CacheKeys.authUser(Role.USER, id));
   }
 
   // ---------- Admin-side ----------
@@ -156,13 +180,20 @@ export class UserService implements OnModuleInit, AuthUserResolver<UserEntity> {
     const user = await this.findByIdOrFail(id);
     const updated = await this.userRepository.mergeAndSave(user, { isActive: false });
     await this.refreshTokenService.revokeAllForUser(id, Role.USER);
-    await this.cacheService.delete(CacheKeys.authUser(Role.USER, id));
+    await this.invalidateAuthCache(id);
     return updated;
   }
 
+  /**
+   * Re-enables a user. Drops the cached principal so a stale `isActive:false`
+   * entry (cached while the account was disabled) can't lock the user out of an
+   * otherwise valid session after re-activation.
+   */
   async activateByAdmin(id: number): Promise<UserEntity> {
     const user = await this.findByIdOrFail(id);
-    return this.userRepository.mergeAndSave(user, { isActive: true });
+    const updated = await this.userRepository.mergeAndSave(user, { isActive: true });
+    await this.invalidateAuthCache(id);
+    return updated;
   }
 
   // ---------- Cross-module assertions ----------

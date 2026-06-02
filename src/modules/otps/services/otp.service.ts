@@ -59,7 +59,7 @@ export class OtpService {
     this.phoneLockWindowSeconds = this.config.get<number>('OTP_PHONE_LOCK_WINDOW_SECONDS')!;
     this.phoneMaxFailuresPerWindow = this.config.get<number>(
       'OTP_PHONE_MAX_FAILURES_PER_WINDOW',
-    );
+    )!;
     this.issueWindowSeconds = this.config.get<number>('OTP_ISSUE_WINDOW_SECONDS')!;
     this.maxIssuesPerWindow = this.config.get<number>('OTP_MAX_ISSUES_PER_WINDOW')!;
     this.fixedCode = this.config.get<string>('OTP_FIXED_CODE') || undefined;

@@ -86,10 +86,11 @@ export class CityService {
 
     try {
       await this.cityRepository.deleteById(city.id);
-    } catch (error: any) {
-      // Handle foreign key constraint violation
+    } catch (error: unknown) {
+      // Translate a FK constraint violation into a domain conflict.
       // PostgreSQL: 23503, MySQL: ER_ROW_IS_REFERENCED
-      if (error?.code === '23503' || error?.code === 'ER_ROW_IS_REFERENCED') {
+      const code = (error as { code?: string } | null)?.code;
+      if (code === '23503' || code === 'ER_ROW_IS_REFERENCED') {
         throw new ConflictException(this.translator.tr('city.errors.cannot_delete_in_use'));
       }
       throw error;

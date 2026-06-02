@@ -14,7 +14,7 @@ export class AdminEntity extends BasePasswordUserEntity {
   @Column({ type: 'varchar', length: 100, name: 'last_name' })
   lastName: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'varchar', length: 32, nullable: true })
   phone: string | null;
 
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'photo_key' })

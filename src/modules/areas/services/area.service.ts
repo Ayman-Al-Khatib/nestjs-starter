@@ -124,9 +124,10 @@ export class AreaService {
 
     try {
       await this.areaRepository.deleteById(area.id);
-    } catch (error: any) {
-      // Handle foreign key constraint violation (RESTRICT)
-      if (error?.code === '23503') {
+    } catch (error: unknown) {
+      // Translate a FK constraint violation (RESTRICT) into a domain conflict.
+      const code = (error as { code?: string } | null)?.code;
+      if (code === '23503') {
         throw new ConflictException(this.translator.tr('area.errors.cannot_delete_in_use'));
       }
       throw error;

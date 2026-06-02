@@ -11,7 +11,7 @@ export function extractBaseName(name: string): string {
 }
 
 export function uniqueFileName(originalName: string, overrideExtension?: string): string {
-  const safe = (originalName ?? '').replace(/[\/\\]/g, '-').replace(/\0/g, '');
+  const safe = (originalName ?? '').replace(/[/\\]/g, '-').replace(/\0/g, '');
   const originalExt = extractExtension(safe);
   const baseName = extractBaseName(safe)
     .replace(/\s+/g, '-')

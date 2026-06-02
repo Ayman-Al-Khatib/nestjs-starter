@@ -88,7 +88,7 @@ export function SyriaPhone(options?: SyriaPhoneOptions, validationOptions?: Vali
         propertyName: propertyKey as string,
         options: validationOptions,
         validator: {
-          validate(value: any, args: ValidationArguments) {
+          validate(value: unknown, _args: ValidationArguments) {
             if (value === undefined || value === null || value === '') {
               return true;
             }

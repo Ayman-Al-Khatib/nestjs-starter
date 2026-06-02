@@ -3,6 +3,7 @@ import magicBytes from 'magic-bytes.js';
 import { FileValidationError } from '../../core/errors/storage.error';
 import { UploadInput } from '../../core/types/upload-input';
 import { extractExtension } from '../../utils/file-name.util';
+import { mimeFromExtension } from '../../utils/mime.util';
 import { IFileValidator } from '../file-validator.interface';
 import { ValidationPolicy } from '../validation-policy';
 
@@ -41,13 +42,18 @@ export class MimeTypeValidator implements IFileValidator {
     const detectedSubtypes = detected
       .map((d) => d.mime?.split('/')[1])
       .filter(Boolean) as string[];
-    const claimedSubtype = input.mimeType.split('/')[1];
 
-    if (!detectedSubtypes.includes(claimedSubtype)) {
+    // Validate the real bytes against the EXTENSION (the trusted allowlist key),
+    // not the client-declared Content-Type. The MIME header is attacker-supplied,
+    // so checking against it lets a file with an allowed extension but a spoofed
+    // header smuggle mismatched content through; the extension is what the
+    // allowlist and downstream key derivation actually trust.
+    const expectedSubtype = mimeFromExtension(input.originalName).split('/')[1];
+    if (!expectedSubtype || !detectedSubtypes.includes(expectedSubtype)) {
       throw new FileValidationError(
-        `File ${input.originalName} content does not match its declared type`,
+        `File ${input.originalName} content does not match its .${ext} extension`,
         'FILE_SIGNATURE_MISMATCH',
-        { claimed: input.mimeType, detected: detectedSubtypes },
+        { extension: ext, expected: expectedSubtype, detected: detectedSubtypes },
       );
     }
   }

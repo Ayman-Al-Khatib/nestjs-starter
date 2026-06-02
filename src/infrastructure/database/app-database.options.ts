@@ -43,13 +43,14 @@ export function buildDataSourceOptions({ env, config }: DatabaseOptionsInput): D
  *
  * Schema management rules:
  *   - development: synchronize=true   (fast iteration; entity changes hit the DB immediately)
- *   - test:        synchronize=false  (test runs the same migration path as prod, so a
- *                                      broken migration fails the suite — not silently fixed
- *                                      by auto-sync)
- *   - production:  synchronize=false  (schema only ever changes via reviewed migrations)
+ *   - test / production: synchronize=false, migrationsRun=true — TypeORM applies pending
+ *       migrations natively on boot, right after `ensureSchemaExists` has created the target
+ *       schema (see app-database.module). Migrations remain runnable from the terminal too via
+ *       `migration:run` / `migration:run:prod`, which use the same DataSource.
  *
- * migrationsRun is on outside of dev so test and deployed instances apply pending
- * migrations on boot.
+ * Note (multi-replica): boot-time auto-migrate can have several replicas race the same DDL.
+ * When scaling horizontally, run `npm run migration:run:prod` once as a release step before
+ * starting the replicas instead of relying on boot.
  */
 export function buildTypeOrmModuleOptions({
   env,
