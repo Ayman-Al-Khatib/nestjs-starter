@@ -22,8 +22,10 @@ import { RefreshTokenRepository } from '../repositories/refresh-token.repository
  *  - Reuse detection: presenting an already-rotated token (revokedAt
  *    set AND replacedById set) is treated as theft → all of that
  *    user's refresh tokens are revoked.
- *  - Revocation: logout calls `revokeAllForUser` so every active
- *    session for the principal dies.
+ *  - Revocation: `revoke` kills only the single presented session
+ *    (ordinary logout). `revokeAllForUser` kills every session for a
+ *    principal and is reserved for credential rotation and reuse
+ *    detection — not for ordinary logout.
  */
 @Injectable()
 export class RefreshTokenService {

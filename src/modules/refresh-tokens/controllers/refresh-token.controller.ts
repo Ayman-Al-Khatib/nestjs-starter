@@ -39,6 +39,7 @@ export class RefreshTokenController {
     return new RefreshResponseDto(accessToken, rotated.token, rotated.role);
   }
 
+  @AuthThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Body() dto: LogoutDto): Promise<{ message: string }> {

@@ -21,18 +21,24 @@ INotificationProvider  ──►  FirebaseNotificationProvider
   file that imports `firebase-admin`.
 - **`providers/abstract-notification.provider.ts`** — option validation
   shared by any future driver.
+- **`providers/disabled-notification.provider.ts`** — null-object notifier
+  bound when no service account is configured; keeps boot working and fails
+  loudly only on an actual send.
 - **`interfaces/`** — `INotificationProvider` contract + option types.
 - **`constants/notification.tokens.ts`** — DI tokens (`NOTIFICATION_PROVIDER`,
   `FIREBASE_ADMIN`).
 
-The module is `@Global()` — import it once in `AppModule` and inject
-`PushNotificationService` anywhere.
+The module is `@Global()` and is already wired into `AppModule` — inject
+`PushNotificationService` anywhere. It is **safe by default**: when
+`NOTIFICATIONS_FIREBASE_SERVICE_ACCOUNT` is unset or not valid JSON, the app
+still boots and the disabled notifier is bound instead. Supply a valid
+service-account JSON to activate Firebase.
 
 ## Configuration
 
 | Variable                                | Notes                                                            |
 | --------------------------------------- | ---------------------------------------------------------------- |
-| `NOTIFICATIONS_FIREBASE_SERVICE_ACCOUNT`| Firebase service-account JSON. Inline JSON or a path to the file |
+| `NOTIFICATIONS_FIREBASE_SERVICE_ACCOUNT`| Firebase service-account JSON (inline or a path). Optional — when absent or unparseable, push is disabled and any send rejects with a 503. The message is not translated: push errors are third-party and handled at the call site, never returned verbatim to the client. |
 
 ## Usage
 

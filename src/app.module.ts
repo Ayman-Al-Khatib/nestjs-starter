@@ -44,6 +44,7 @@ import { RefreshTokensModule } from 'modules/refresh-tokens/refresh-tokens.modul
 import { UsersModule } from 'modules/users/users.module';
 import { WhatsappModule } from 'modules/whatsapp/whatsapp.module';
 import { AppI18nModule } from 'infrastructure/i18n';
+import { PushNotificationModule } from 'infrastructure/notifications';
 import { StorageModule } from 'infrastructure/storage';
 import { WhatsAppModule } from 'infrastructure/whatsapp-client';
 import { FiltersModule } from './core/filters';
@@ -67,6 +68,7 @@ import { AppThrottleModule } from './infrastructure/throttle';
     WhatsAppModule,
     AppCacheModule,
     AppHealthModule,
+    PushNotificationModule,
 
     // Global error handling (registers GlobalExceptionFilter as APP_FILTER)
     FiltersModule,
