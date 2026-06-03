@@ -47,8 +47,9 @@ jobs:
           --health-retries 5
     env:
       # Turns on the DB-backed auth e2e suite (skipped locally). The app loads
-      # env/.env.development (committed, no secrets) whose DB_* point at
-      # localhost:5432 — matching the postgres service above.
+      # env/.env.test (committed, no secrets) whose DB_* point at localhost:5432
+      # — matching the postgres service above — and boots with synchronize=false
+      # so the schema is built from migrations.
       RUN_DB_E2E: '1'
     steps:
       - uses: actions/checkout@v4

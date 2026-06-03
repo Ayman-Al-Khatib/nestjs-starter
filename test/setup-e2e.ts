@@ -1,12 +1,11 @@
 // E2E environment bootstrap. Loaded via jest-e2e.json `setupFiles`.
 //
-// Uses the committed development env file (no real secrets) so the app's Zod
-// env validation passes the moment AppModule is imported (ConfigModule.forRoot
-// validates eagerly). Jest defaults NODE_ENV to "test", so force "development"
-// here — setupFiles run before any spec imports AppModule. CI overrides DB_*
-// via real process.env values (which @nestjs/config will not clobber) to point
-// the suite at its Postgres service container.
-process.env.NODE_ENV = 'development';
+// Runs in the "test" environment (committed env/.env.test, no real secrets) so
+// the app boots with synchronize=false and migrationsRun=true: the schema is
+// built from migrations only, matching production. Forcing "development" here
+// would flip synchronize on, and the suite's explicit runMigrations() would
+// then collide with the just-synchronized types (duplicate CREATE TYPE).
+process.env.NODE_ENV = 'test';
 
 // Force the deterministic / infra-free drivers for tests.
 process.env.CACHE_DRIVER = 'noop';
