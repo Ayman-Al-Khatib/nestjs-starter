@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Inject,
-  Logger,
   NotFoundException,
   Param,
   Res,
@@ -23,8 +22,6 @@ import { LOCAL_STORAGE_BASE_PATH } from './local.tokens';
 @Public()
 @Controller({ path: LOCAL_STORAGE_ROUTE, version: VERSION_NEUTRAL })
 export class LocalStorageController {
-  private readonly logger = new Logger(LocalStorageController.name);
-
   constructor(@Inject(LOCAL_STORAGE_BASE_PATH) private readonly basePath: string) {}
 
   @Get('public/*path')
@@ -32,7 +29,7 @@ export class LocalStorageController {
     @Param('path') segments: string | string[],
     @Res() res: Response,
   ): Promise<void> {
-    return this.stream(`${Visibility.PUBLIC}/${joinSegments(segments)}`, res);
+    return this.stream(Visibility.PUBLIC, segments, res);
   }
 
   @UseGuards(LocalStreamGuard)
@@ -41,14 +38,20 @@ export class LocalStorageController {
     @Param('path') segments: string | string[],
     @Res() res: Response,
   ): Promise<void> {
-    return this.stream(`${Visibility.PRIVATE}/${joinSegments(segments)}`, res);
+    return this.stream(Visibility.PRIVATE, segments, res);
   }
 
-  private async stream(key: string, res: Response): Promise<void> {
-    const baseAbs = path.resolve(this.basePath);
-    const fullPath = path.resolve(this.basePath, key);
+  private async stream(
+    visibility: Visibility,
+    segments: string | string[],
+    res: Response,
+  ): Promise<void> {
+    // Confine to the visibility root (not just basePath) so a `..` in the public
+    // route can't resolve into the guard-protected private tree.
+    const root = path.resolve(this.basePath, visibility);
+    const fullPath = path.resolve(root, joinSegments(segments));
 
-    if (fullPath !== baseAbs && !fullPath.startsWith(baseAbs + path.sep)) {
+    if (fullPath !== root && !fullPath.startsWith(root + path.sep)) {
       throw new NotFoundException();
     }
 
@@ -67,7 +70,6 @@ export class LocalStorageController {
 
     const stream = createReadStream(fullPath);
     stream.on('error', (err) => {
-      this.logger.warn(`Stream error for ${key}: ${err?.message}`);
       if (!res.headersSent) {
         res.status(404).end();
       } else {
