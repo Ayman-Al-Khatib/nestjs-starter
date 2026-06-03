@@ -4,7 +4,7 @@
   "roots": ["<rootDir>/test"],
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
-  "setupFiles": ["<rootDir>/test/setup-e2e.ts"],
+  "setupFiles": ["<rootDir>/test/setup-e2e.ts", "<rootDir>/src/test-utils/silence-logger.ts"],
   "testTimeout": 30000,
   "transform": {
     "^.+\\.(t|j)s$": ["ts-jest", { "tsconfig": "<rootDir>/tsconfig.spec.json" }]
