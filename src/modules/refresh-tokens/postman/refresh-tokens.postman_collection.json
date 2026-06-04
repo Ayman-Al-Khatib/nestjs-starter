@@ -59,7 +59,7 @@
               "host": ["{{base_url}}"],
               "path": ["api", "v1", "auth", "logout"]
             },
-            "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token to revoke. |\n\n### Notes\nIdempotent: revoking an unknown or already-revoked token returns success. Set the environment variable `active_role` (`admin` or `user`) before calling so the test script clears the right token pair.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |"
+            "description": "### Auth\nNone — the refresh token itself authenticates the call.\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| refreshToken | string | YES | The opaque refresh token to revoke. |\n\n### Notes\nIdempotent: revoking an unknown or already-revoked token returns success. Set the environment variable `active_role` (`admin` or `user`) before calling so the test script clears the right token pair.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 422 | Validation failed |\n| 429 | Auth throttle exceeded |"
           },
           "response": [],
           "event": [
