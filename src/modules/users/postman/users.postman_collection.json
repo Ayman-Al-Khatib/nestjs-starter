@@ -192,6 +192,44 @@
           "response": []
         },
         {
+          "name": "Deactivate",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/:userId/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", ":userId", "deactivate"],
+              "variable": [{ "key": "userId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| userId | path param | YES | User ID. |\n\n### Notes\nSets `isActive = false`, revokes all of the user's refresh tokens, and drops the cached principal so the next request is rejected by the auth guard. Idempotent — deactivating an already-inactive user still returns the user.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | User not found |"
+          },
+          "response": []
+        },
+        {
+          "name": "Activate",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{admin_access_token}}", "type": "string" }]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users/:userId/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users", ":userId", "activate"],
+              "variable": [{ "key": "userId", "value": "1" }]
+            },
+            "description": "### Auth\nBearer `{{admin_access_token}}` — required (Admin role).\n\n### Input\n| Field | Type | Required | Description |\n|---|---|---|---|\n| userId | path param | YES | User ID. |\n\n### Notes\nSets `isActive = true` and drops the cached principal so a stale disabled entry can't lock the user out of an otherwise valid session. Idempotent.\n\n### Errors\n| Code | Reason |\n|---|---|\n| 401 | Missing/expired access token |\n| 403 | Insufficient role |\n| 404 | User not found |"
+          },
+          "response": []
+        },
+        {
           "name": "Find All",
           "request": {
             "method": "GET",
