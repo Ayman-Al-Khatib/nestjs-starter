@@ -22,7 +22,7 @@ The whole role-aware auth pipeline lives here so a feature module never
 imports another feature's repository to "look up the user."
 
 ```
-@Protected(Role.PATIENT)
+@Protected(Role.USER)
     │
     ▼
 JwtAuthGuard
@@ -31,7 +31,7 @@ JwtAuthGuard
   3. Coerce payload.role to Role
   4. Assert it's in the controller's allow-list
   5. UserResolverRegistry.get(role).findByIdForAuth(userId)
-  6. request.user = <PatientEntity | DoctorEntity | AdminEntity>
+  6. request.user = <UserEntity | AdminEntity>
 ```
 
 ### Registry pattern
@@ -41,9 +41,9 @@ process-wide `Map<Role, AuthUserResolver>`. Each role-owning module
 registers its service in `onModuleInit`:
 
 ```ts
-// In PatientsModule
+// In UsersModule
 onModuleInit() {
-  this.userResolvers.register(Role.PATIENT, this.patientService);
+  this.userResolvers.register(Role.USER, this.userService);
 }
 ```
 
@@ -56,7 +56,8 @@ deps.
 - `@Protected()` — any authenticated principal.
 - `@Protected(Role.X)` / `@Protected(Role.X, Role.Y)` — allow-list.
 - `@RequireCompletedProfile()` — stacks `ProfileCompletionGuard` after
-  `JwtAuthGuard`. Used for patient flows that need a name/DOB set.
+  `JwtAuthGuard`. Used for `Role.USER` flows that require a completed
+  profile (`isProfileCompleted === true`) before proceeding.
 
 ## Pagination
 
@@ -66,14 +67,14 @@ response DTO:
 
 ```ts
 // repository
-findPageForAdmin(query: ListClinicsQueryDto) {
-  const qb = this.repo.createQueryBuilder('c').orderBy('c.id', 'DESC');
+findPageForAdmin(query: ListUsersAdminQueryDto) {
+  const qb = this.repo.createQueryBuilder('u').orderBy('u.id', 'DESC');
   return paginate(qb, query);
 }
 
 // controller
-const result = await this.clinicService.findPageForAdmin(query);
-return mapPaginated(result, ClinicResponseDto.fromEntity);
+const result = await this.userService.findPageForAdmin(query);
+return mapPaginatedAsync(result, (user) => this.userService.buildResponseDto(user));
 ```
 
 Use `mapPaginatedAsync` when the mapper awaits (e.g. storage URL signing).
@@ -121,7 +122,7 @@ tokens or OTP codes.
 ## Decorators
 
 A small library of class-validator + Nest helpers. The naming
-decorators (`@TrimmedString`, `@SyriaPhone`, `@IsTimeHhmm`, ...) all
+decorators (`@TrimmedString`, `@SyriaPhone`, `@IsTimeHHMM`, ...) all
 emit localized messages via `Translator.trValMsg` so error responses
 remain language-aware. See the file names — each is one purpose.
 

@@ -11,7 +11,7 @@ export class PhoneOtpVerifyDto {
   @IsString({ message: Translator.trValMsg('common.validation.string.invalid') })
   @IsNotEmpty({ message: Translator.trValMsg('common.validation.string.empty') })
   @MinLength(4, { message: Translator.trValMsg('common.validation.string.too_short') })
-  @MaxLength(8, { message: Translator.trValMsg('common.validation.string.too_long') })
+  @MaxLength(10, { message: Translator.trValMsg('common.validation.string.too_long') })
   @Matches(/^\d+$/, { message: Translator.trValMsg('otp.errors.invalid_code') })
   code: string;
 }

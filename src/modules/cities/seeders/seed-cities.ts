@@ -1,5 +1,6 @@
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { CityEntity } from '../entities/city.entity';
 
 /**
@@ -27,7 +28,7 @@ const citySeeds: Pick<CityEntity, 'id' | 'nameEn' | 'nameAr'>[] = [
 export async function seedCities(app: INestApplicationContext): Promise<void> {
   const logger = new Logger('seedCities');
   const dataSource = app.get(DataSource);
-  const schema = (dataSource.options as any).schema as string;
+  const schema = (dataSource.options as PostgresConnectionOptions).schema ?? 'public';
 
   const values = citySeeds
     .map((_, i) => `($${i * 3 + 1}, $${i * 3 + 2}, $${i * 3 + 3})`)

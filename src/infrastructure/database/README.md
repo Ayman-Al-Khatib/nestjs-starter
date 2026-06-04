@@ -88,8 +88,9 @@ to `up()` and `down()`. Then review the generated SQL:
 - Index / enum names match the project conventions.
 
 For DB-level invariants beyond column constraints (unique partial
-indexes, exclusion / check constraints), append raw SQL — see
-[`AppointmentsNoOverlapConstraint`](../../database/migrations/1747600000002-AppointmentsNoOverlapConstraint.ts).
+indexes, exclusion / check constraints), append raw SQL after the
+generated statements — for example the unique user-search indexes in
+[`AddUserSearchIndexesAndUnifyPhoneLength`](../../database/migrations/1747600000004-AddUserSearchIndexesAndUnifyPhoneLength.ts).
 
 ## Anti-patterns
 

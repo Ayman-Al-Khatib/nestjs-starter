@@ -69,7 +69,7 @@ function isValidSyriaPhone(phone: string): boolean {
  * Validates a Syrian mobile phone number and (optionally) normalizes it
  * into one canonical shape before validation runs. Accepts three input
  * forms — local `09xxxxxxxx`, dialing-prefix `00963xxxxxxxxx`, and
- * international `+963xxxxxxxxx` — and only allows the four real provider
+ * international `+963xxxxxxxxx` — and only allows the six real provider
  * codes (Syriatel 93/98/99 and MTN 94/95/96 — encoded in the regex via
  * the second-digit class `[3-6,8-9]`).
  *
@@ -88,7 +88,7 @@ export function SyriaPhone(options?: SyriaPhoneOptions, validationOptions?: Vali
         propertyName: propertyKey as string,
         options: validationOptions,
         validator: {
-          validate(value: any, args: ValidationArguments) {
+          validate(value: unknown, _args: ValidationArguments) {
             if (value === undefined || value === null || value === '') {
               return true;
             }

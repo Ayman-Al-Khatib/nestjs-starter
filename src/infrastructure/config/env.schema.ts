@@ -8,6 +8,7 @@ import {
   otpSchema,
   refineCacheConfig,
   refineOtpConfig,
+  refineSecurityConfig,
   refineStorageConfig,
   securitySchema,
   serverSchema,
@@ -32,7 +33,7 @@ export const environmentSchema = z
   })
   .superRefine(refineStorageConfig)
   .superRefine(refineOtpConfig)
-  // .superRefine(refineSecurityConfig)//TODO
+  .superRefine(refineSecurityConfig)
   .superRefine(refineCacheConfig);
 
 export type EnvironmentConfig = z.infer<typeof environmentSchema>;

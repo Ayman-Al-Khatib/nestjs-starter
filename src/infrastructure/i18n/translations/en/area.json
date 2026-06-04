@@ -4,6 +4,6 @@
         "name_en_taken": "An area with this English name already exists in this city.",
         "name_ar_taken": "An area with this Arabic name already exists in this city.",
         "area_not_in_city": "The selected area does not belong to the specified city.",
-        "cannot_delete_in_use": "Cannot delete this area because it is associated with one or more clinics."
+        "cannot_delete_in_use": "Cannot delete this area because it is linked to existing records."
     }
 }

@@ -23,4 +23,4 @@ export const QR_WAIT_TIMEOUT_MS = 60_000;
 export const PERSONAL_CHAT_JID_SUFFIX = '@s.whatsapp.net';
 
 /** Default device label shown inside WhatsApp → Linked Devices on the phone. */
-export const WA_DEVICE_LABEL: [string, string, string] = ['Eldar Dental', 'Server', '1.0.0'];
+export const WA_DEVICE_LABEL: [string, string, string] = ['NestJS Starter', 'Server', '1.0.0'];

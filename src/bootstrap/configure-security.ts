@@ -28,7 +28,19 @@ export function configureSecurity(
       hidePoweredBy: true,
     }),
   );
-    app.use(compression({ threshold: 1024, level: 6 }));
+  app.use(
+    compression({
+      threshold: 1024,
+      level: 6,
+      // Skip compression for token-bearing auth responses (login / refresh) to
+      // defuse the theoretical BREACH oracle on secrets in a compressed body.
+      // Everything else falls back to compression's default content-type filter.
+      filter: (req, res) => {
+        if (req.path.includes('/auth/')) return false;
+        return compression.filter(req, res);
+      },
+    }),
+  );
 
   const origins = config.getOrThrow<string[]>('CORS_ORIGINS');
   app.enableCors({

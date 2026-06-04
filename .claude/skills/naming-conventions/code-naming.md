@@ -6,15 +6,15 @@
 src/modules/<plural-kebab>/
 ```
 
-Always plural: `clinics`, `appointments`, `doctors`, `medical-records`. Never `clinic/`, never `Clinic/`, never `clinic_module/`. One folder per primary entity.
+Always plural: `cities`, `areas`, `users`, `refresh-tokens`. Never `city/`, never `City/`, never `city_module/`. One folder per primary entity.
 
 ## Sub-folders
 
 Flat, plural, kebab-case:
 
 ```
-modules/clinics/
-├── clinics.module.ts
+modules/cities/
+├── cities.module.ts
 ├── controllers/
 ├── dto/
 ├── entities/
@@ -32,19 +32,19 @@ Never nest under `api/`, `application/`, `domain/`, `infrastructure/`.
 
 | Role | Suffix | Example |
 |---|---|---|
-| Module | `.module.ts` | `clinics.module.ts` |
-| Entity | `.entity.ts` | `clinic.entity.ts` |
-| Repository | `.repository.ts` | `clinic.repository.ts` |
-| Service | `.service.ts` | `clinic.service.ts` |
-| Sliced service | `-<slice>.service.ts` | `appointment-booking.service.ts` |
-| Controller | `.controller.ts` | `admin-clinic.controller.ts` |
-| DTO | `.dto.ts` | `create-clinic.dto.ts` |
-| Response DTO | `-response.dto.ts` | `clinic-response.dto.ts` |
-| Query DTO | `-query.dto.ts` | `list-clinics-query.dto.ts` |
-| Enum | `.enum.ts` | `appointment-status.enum.ts` |
+| Module | `.module.ts` | `cities.module.ts` |
+| Entity | `.entity.ts` | `city.entity.ts` |
+| Repository | `.repository.ts` | `city.repository.ts` |
+| Service | `.service.ts` | `city.service.ts` |
+| Sliced service | `-<slice>.service.ts` | `user-auth.service.ts` |
+| Controller | `.controller.ts` | `admin-user.controller.ts` |
+| DTO | `.dto.ts` | `create-city.dto.ts` |
+| Response DTO | `-response.dto.ts` | `city-response.dto.ts` |
+| Query DTO | `-query.dto.ts` | `list-users-admin-query.dto.ts` |
+| Enum | `.enum.ts` | `otp-purpose.enum.ts` |
 | Interface | `.interface.ts` | `paginated-response.interface.ts` |
-| Type alias | `.type.ts` | `slot-instance.type.ts` |
-| Pure helper | `.util.ts` | `clinic-time.util.ts` |
+| Type alias | `.type.ts` | `paginated-result.type.ts` |
+| Pure helper | `.util.ts` | `timezone.util.ts` |
 | Pipe | `.pipe.ts` | `positive-int.pipe.ts` |
 | Guard | `.guard.ts` | `jwt-auth.guard.ts` |
 | Decorator | `.decorator.ts` | `current-user.decorator.ts` |
@@ -61,16 +61,16 @@ Singular file, singular class. Folders are plural; the file inside is singular. 
 
 | Class kind | Pattern | Example |
 |---|---|---|
-| Entity | `<Name>Entity` | `ClinicEntity` |
-| Repository | `<Name>Repository` | `ClinicRepository` |
-| Service (single) | `<Name>Service` | `ClinicService` |
-| Service (sliced) | `<Name><Slice>Service` | `AppointmentBookingService` |
-| Controller | `<Audience><Name>Controller` | `AdminClinicController` |
+| Entity | `<Name>Entity` | `CityEntity` |
+| Repository | `<Name>Repository` | `CityRepository` |
+| Service (single) | `<Name>Service` | `CityService` |
+| Service (sliced) | `<Name><Slice>Service` | `UserAuthService` |
+| Controller | `<Audience><Name>Controller` | `AdminUserController` |
 | Public controller | `<Name>Controller` (no audience) | only when audience-agnostic |
-| DTO (input) | `<Verb><Name>Dto` | `CreateClinicDto` |
-| DTO (response) | `<Name>ResponseDto` | `ClinicResponseDto` |
-| DTO (query) | `List<NamePlural>QueryDto` | `ListClinicsQueryDto` |
-| Module | `<Name>Module` | `ClinicsModule` (matches the **folder**, plural) |
+| DTO (input) | `<Verb><Name>Dto` | `CreateCityDto` |
+| DTO (response) | `<Name>ResponseDto` | `CityResponseDto` |
+| DTO (query) | `List<NamePlural>QueryDto` | `ListUsersAdminQueryDto` |
+| Module | `<Name>Module` | `CitiesModule` (matches the **folder**, plural) |
 | Pipe | `<Behaviour>Pipe` | `PositiveIntPipe` |
 | Guard | `<Reason>Guard` | `JwtAuthGuard`, `RolesGuard` |
 | Filter | `<Scope>Filter` | `GlobalExceptionFilter` |
@@ -78,7 +78,7 @@ Singular file, singular class. Folders are plural; the file inside is singular. 
 | Decorator factory | `<Behaviour>` (no suffix) | `Protected`, `CurrentUser` |
 | Pure helper | (no class — export functions) | `localDayOf` |
 
-Entity is singular (`Clinic`); list query is collection (`ListClinicsQueryDto`); module matches folder (`ClinicsModule`).
+Entity is singular (`City`); list query is collection (`ListUsersAdminQueryDto`); module matches folder (`CitiesModule`).
 
 ## Interfaces — only for real contracts
 
@@ -88,14 +88,14 @@ Entity is singular (`Clinic`); list query is collection (`ListClinicsQueryDto`);
 
 ## Type aliases
 
-- `PascalCase`, no prefix: `MulterFile`, `SlotInstance`, `LocalDay`.
+- `PascalCase`, no prefix: `MulterFile`, `StoredFile`, `UploadInput`.
 - Use `type` for unions, branded primitives, shape-only DTO inputs.
 
 ## Enums
 
-- Enum type: `PascalCase`, singular: `AppointmentStatus`, `Role`, `Gender`.
-- Members: `UPPER_SNAKE`: `PENDING`, `WILL_NOT_COME`.
-- String values: `snake_case`, matching the PG enum label: `PENDING = 'pending'`.
+- Enum type: `PascalCase`, singular: `Role`, `Gender`, `OtpPurpose`.
+- Members: `UPPER_SNAKE`: `ADMIN`, `USER`, `USER_LOGIN`.
+- String values: `snake_case`, matching the PG enum label: `USER = 'user'`.
 - Sort enums use `<Domain>Sort` with members like `NEWEST`, `NAME_ASC`, `PRICE_DESC`.
 
 ## Variables, parameters, properties
@@ -103,7 +103,7 @@ Entity is singular (`Clinic`); list query is collection (`ListClinicsQueryDto`);
 - `camelCase`, descriptive nouns. Avoid one-letter names except loop counters (`i`) or coordinates (`x`, `y`).
 - Acronyms: treat as words — `dbHost`, `httpClient`, `jwtPayload`. Not `DBHost`, `HTTPClient`.
 - Booleans: `is*` / `has*` / `can*` / `should*` / `was*`.
-- Plural for collections: `clinics: ClinicEntity[]`, `slotIds: number[]`.
-- Singular for the element: `for (const clinic of clinics)`.
+- Plural for collections: `cities: CityEntity[]`, `areaIds: number[]`.
+- Singular for the element: `for (const city of cities)`.
 - Unit suffixes when not obvious from type: `durationMs`, `timeoutSeconds`, `priceCents`. (`startTime: Date` doesn't need a suffix.)
 - Module-scoped immutable constants: `UPPER_SNAKE`. Locally-scoped consts: `camelCase`.

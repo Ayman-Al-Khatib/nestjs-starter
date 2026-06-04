@@ -10,6 +10,7 @@ import {
     Post,
 } from '@nestjs/common';
 import { Protected } from 'core/decorators/protected.decorator';
+import { Public } from 'core/decorators/public.decorator';
 import { Role } from 'domain/enums/role.enum';
 import { PositiveIntPipe } from 'core/pipes/positive-int.pipe';
 import { CityResponseDto } from '../dto/city-response.dto';
@@ -27,12 +28,14 @@ export class CityController {
 
   // ---------- Public (guest-accessible) ----------
 
+  @Public()
   @Get()
   async findAll(): Promise<CityResponseDto[]> {
     const cities = await this.cityService.list();
     return cities.map(CityResponseDto.fromEntity);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id', PositiveIntPipe) id: number): Promise<CityResponseDto> {
     const city = await this.cityService.findByIdOrFail(id);

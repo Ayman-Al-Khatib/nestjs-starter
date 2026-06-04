@@ -27,11 +27,11 @@ Purpose: reusable base project. TODO(per-project): replace this header and the p
 - Module ownership: entity X lives in `modules/<x-plural>/`, including its `admin-<x>.controller.ts`. `modules/admins/` is the Admin entity only.
 - Module layout: flat `controllers/ dto/ entities/ enums/ repositories/ services/` siblings. Never nest under `api/application/domain/infrastructure`.
 - Layering: cross-feature reads go through the owning service, never its repository. Query builders live only in repositories.
-- Service split: at ~200 LOC, split by responsibility (see `AppointmentBookingService` / `AppointmentQueryService` / `AppointmentStatusService` / `AppointmentNotificationService`).
+- Service split: at ~200 LOC, split by responsibility (see `UserService` for profile/CRUD vs. `UserAuthService` for the phone/OTP login flow; likewise `AdminService` / `AdminAuthService`).
 - FK delete: record-bearing tables `RESTRICT`; junction-ish `CASCADE`. Inactive entities use `is_active`, not hard delete.
 - Migrations: every migration starts with `await scopeToConnectionSchema(queryRunner);`. `synchronize` is OFF.
 - i18n: edit JSON under `src/infrastructure/i18n/translations/{ar,en}/`, then `npm run i18n:sync`. `translation-keys.ts` is auto-generated.
-- Errors: throw Nest built-ins with translated messages. Catch only to translate a DB constraint into a domain exception (see `AppointmentBookingService` overlap handling).
+- Errors: throw Nest built-ins with translated messages. Catch only to translate a DB constraint into a domain exception (see `CityService.deleteForAdmin` mapping a Postgres FK violation `23503` to a `ConflictException`).
 - Path aliases: `core/* domain/* infrastructure/* modules/* shared/*`. Import order: nest/3rd-party → core → domain → infrastructure → modules → shared → relative.
 - English-only identifiers, file names, comments. User-facing strings via i18n.
 

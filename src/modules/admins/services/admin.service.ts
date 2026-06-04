@@ -3,6 +3,7 @@ import { AuthUserResolver } from 'core/auth/auth-user-resolver.interface';
 import { UserResolverRegistry } from 'core/auth/user-resolver.registry';
 import { Role } from 'domain/enums/role.enum';
 import { RefreshTokenService } from 'modules/refresh-tokens/services/refresh-token.service';
+import { CacheKeys, CacheService } from 'infrastructure/cache';
 import { Translator } from 'infrastructure/i18n';
 import { Visibility } from 'infrastructure/storage/core/enums/visibility.enum';
 import { MulterAdapter, MulterFile } from 'infrastructure/storage/http/multer.adapter';
@@ -27,6 +28,7 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
     private readonly storageService: StorageService,
     private readonly translator: Translator,
     private readonly refreshTokenService: RefreshTokenService,
+    private readonly cacheService: CacheService,
   ) {}
 
   onModuleInit(): void {
@@ -41,6 +43,19 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
     return this.adminRepository.findByUsername(username);
   }
 
+  private async findByIdOrFail(id: number): Promise<AdminEntity> {
+    const admin = await this.adminRepository.findById(id);
+    if (!admin) {
+      throw new UnauthorizedException(this.translator.tr('admin.errors.invalid_credentials'));
+    }
+    return admin;
+  }
+
+  /** Drops the cached auth principal so a mutation reflects on the next request. */
+  private invalidateAuthCache(id: number): Promise<void> {
+    return this.cacheService.delete(CacheKeys.authUser(Role.ADMIN, id));
+  }
+
   async resolvePhotoUrl(key: string | null): Promise<string | null> {
     if (!key) return null;
     const { url } = await this.storageService.getAccessUrl(key);
@@ -53,16 +68,22 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
   }
 
   async uploadPhoto(admin: AdminEntity, file: MulterFile): Promise<AdminEntity> {
+    // Reload a managed row: under the Redis auth cache the principal is a plain
+    // JSON object without entity prototype, so writes must target a fresh entity.
+    const current = await this.findByIdOrFail(admin.id);
+
     const stored = await this.storageService.upload(MulterAdapter.toUploadInput(file), {
       visibility: Visibility.PUBLIC,
       folder: 'avatars/admins',
     });
 
-    if (admin.photoKey) {
-      await this.storageService.delete(admin.photoKey).catch(() => undefined);
+    if (current.photoKey) {
+      await this.storageService.delete(current.photoKey).catch(() => undefined);
     }
 
-    return this.adminRepository.mergeAndSave(admin, { photoKey: stored.key });
+    const saved = await this.adminRepository.mergeAndSave(current, { photoKey: stored.key });
+    await this.invalidateAuthCache(saved.id);
+    return saved;
   }
 
   /**
@@ -80,9 +101,18 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
   async updateMe(admin: AdminEntity, dto: UpdateMeDto): Promise<AdminEntity> {
     const isChangingCredentials = dto.username !== undefined || dto.password !== undefined;
 
+    // Reload as a managed entity carrying the password hash. The principal from
+    // the auth guard omits the password (select:false) and, under the Redis
+    // cache, is a plain object without entity methods — so the credential check
+    // and the @BeforeUpdate hash hook must run against a freshly loaded row.
+    const current = await this.adminRepository.findByIdWithPassword(admin.id);
+    if (!current) {
+      throw new UnauthorizedException(this.translator.tr('admin.errors.invalid_credentials'));
+    }
+
     if (isChangingCredentials) {
       // DTO already guaranteed currentPassword is a non-empty string here.
-      const valid = await admin.checkPassword(dto.currentPassword!);
+      const valid = await current.checkPassword(dto.currentPassword!);
       if (!valid) {
         throw new UnauthorizedException(
           this.translator.tr('admin.errors.current_password_incorrect'),
@@ -90,9 +120,9 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
       }
     }
 
-    if (dto.username !== undefined && dto.username !== admin.username) {
+    if (dto.username !== undefined && dto.username !== current.username) {
       const existing = await this.adminRepository.findByUsername(dto.username);
-      if (existing && existing.id !== admin.id) {
+      if (existing && existing.id !== current.id) {
         throw new ConflictException(this.translator.tr('admin.errors.username_taken'));
       }
     }
@@ -100,10 +130,16 @@ export class AdminService implements OnModuleInit, AuthUserResolver<AdminEntity>
     // Drop non-column fields (e.g. currentPassword) before merging onto the entity.
     const { currentPassword: _currentPassword, ...changes } = dto;
 
+    const saved = await this.adminRepository.mergeAndSave(current, changes);
+
     if (isChangingCredentials) {
+      // Rotated credentials kill every active session.
       await this.refreshTokenService.revokeAllForUser(admin.id, Role.ADMIN);
     }
+    // Always drop the cached principal so any profile/credential change takes
+    // effect on the next request rather than after the cache TTL.
+    await this.invalidateAuthCache(admin.id);
 
-    return this.adminRepository.mergeAndSave(admin, changes);
+    return saved;
   }
 }

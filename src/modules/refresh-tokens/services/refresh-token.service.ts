@@ -1,10 +1,11 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Role } from 'domain/enums/role.enum';
 import { EnvironmentConfig } from 'infrastructure/config';
 import { Translator } from 'infrastructure/i18n';
 import { generateOpaqueToken, sha256 } from 'shared/utils';
-import { DataSource } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { RefreshTokenIssueResult } from '../dto/refresh-token-issue.dto';
 import { RefreshTokenRotateResult } from '../dto/refresh-token-rotate-result.dto';
 import { RefreshTokenEntity } from '../entities/refresh-token.entity';
@@ -21,8 +22,10 @@ import { RefreshTokenRepository } from '../repositories/refresh-token.repository
  *  - Reuse detection: presenting an already-rotated token (revokedAt
  *    set AND replacedById set) is treated as theft → all of that
  *    user's refresh tokens are revoked.
- *  - Revocation: logout calls `revokeAllForUser` so every active
- *    session for the principal dies.
+ *  - Revocation: `revoke` kills only the single presented session
+ *    (ordinary logout). `revokeAllForUser` kills every session for a
+ *    principal and is reserved for credential rotation and reuse
+ *    detection — not for ordinary logout.
  */
 @Injectable()
 export class RefreshTokenService {
@@ -79,6 +82,11 @@ export class RefreshTokenService {
     const now = new Date();
 
     // Atomic: insert new token row + revoke old row in one transaction.
+    // The revoke is conditional on the old row still being active — if two
+    // requests present the same token concurrently, only the one whose
+    // UPDATE matches `revokedAt IS NULL` wins; the loser's whole transaction
+    // (including its freshly inserted row) rolls back. Without this guard
+    // both would mint a valid token from a single one (double-spend).
     await this.dataSource.transaction(async (manager) => {
       const newRow = manager.create(RefreshTokenEntity, {
         tokenHash: sha256(newToken),
@@ -88,11 +96,19 @@ export class RefreshTokenService {
       });
       const saved = await manager.save(newRow);
 
-      await manager.update(RefreshTokenEntity, { id: row.id }, {
-        revokedAt: now,
-        replacedById: saved.id,
-        lastUsedAt: now,
-      });
+      const result = await manager.update(
+        RefreshTokenEntity,
+        { id: row.id, revokedAt: IsNull() },
+        {
+          revokedAt: now,
+          replacedById: saved.id,
+          lastUsedAt: now,
+        },
+      );
+
+      if (result.affected !== 1) {
+        throw this.invalid();
+      }
     });
 
     return { token: newToken, expiresAt, userId: row.userId, role: row.role };
@@ -106,6 +122,12 @@ export class RefreshTokenService {
 
   revokeAllForUser(userId: number, role: Role): Promise<void> {
     return this.repo.revokeAllForUser(userId, role, new Date());
+  }
+
+  /** Nightly housekeeping: drop expired token rows so the table stays bounded. */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async pruneExpiredTokens(): Promise<void> {
+    await this.repo.deleteExpiredBefore(new Date());
   }
 
   private async lookup(presentedToken: string): Promise<RefreshTokenEntity> {

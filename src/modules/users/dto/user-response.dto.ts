@@ -19,6 +19,7 @@ export class UserResponseDto {
   address: string | null;
   photoUrl: string | null;
   isProfileCompleted: boolean;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 
@@ -34,6 +35,7 @@ export class UserResponseDto {
     dto.address = user.address;
     dto.photoUrl = resolvedPhotoUrl ?? null;
     dto.isProfileCompleted = user.isProfileCompleted;
+    dto.isActive = user.isActive;
     dto.createdAt = user.createdAt;
     dto.updatedAt = user.updatedAt;
     return dto;

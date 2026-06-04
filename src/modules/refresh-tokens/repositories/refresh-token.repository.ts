@@ -32,10 +32,6 @@ export class RefreshTokenRepository {
     return this.repo.findOne({ where: { tokenHash: sha256(plainToken) } });
   }
 
-  async markRotated(id: string, replacedById: string, at: Date): Promise<void> {
-    await this.repo.update({ id }, { revokedAt: at, replacedById, lastUsedAt: at });
-  }
-
   async revoke(id: string, at: Date): Promise<void> {
     await this.repo.update({ id }, { revokedAt: at });
   }
@@ -45,5 +41,19 @@ export class RefreshTokenRepository {
       { userId, role, revokedAt: IsNull() },
       { revokedAt: at },
     );
+  }
+
+  /**
+   * Hard-deletes rows whose expiry has passed. Expired tokens can no longer be
+   * rotated (rotate() rejects them), so removing them only reclaims space and
+   * never loses reuse-detection signal for live tokens.
+   */
+  async deleteExpiredBefore(now: Date): Promise<number> {
+    const result = await this.repo
+      .createQueryBuilder()
+      .delete()
+      .where('expires_at < :now', { now })
+      .execute();
+    return result.affected ?? 0;
   }
 }

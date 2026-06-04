@@ -19,7 +19,7 @@ Add a TypeORM entity to an existing module with its repository and a generated m
 ## Phase 1 — Validate
 1. `Glob src/modules/<module>/` — if missing, abort and suggest `/init-feature-module <module>`.
 2. `Grep "class <EntityName>Entity"` — if defined anywhere, stop.
-3. Reference shape: `src/modules/appointment/entities/appointment.entity.ts`.
+3. Reference shape: `src/modules/areas/entities/area.entity.ts` (has an FK to a parent entity).
 
 ## Phase 2 — Ask only what you cannot infer
 Ask only when:
@@ -30,7 +30,7 @@ Ask only when:
 ## Phase 3 — Entity (`src/modules/<module>/entities/<entity-kebab>.entity.ts`)
 - `@Entity({ name: '<table>' })` (snake_case plural).
 - `@PrimaryGeneratedColumn() id: number;`
-- FKs: paired `@Column({ type: 'int', name: '<col>_id' }) <col>Id` + `@ManyToOne(() => <Parent>Entity, { onDelete: '<RESTRICT|CASCADE>' })` + `@JoinColumn({ name: '<col>_id' })`. Default: `RESTRICT` for record-bearing parents (doctor, clinic, patient on history rows), `CASCADE` for owned children (e.g. rating on a deleted appointment).
+- FKs: paired `@Column({ type: 'int', name: '<col>_id' }) <col>Id` + `@ManyToOne(() => <Parent>Entity, { onDelete: '<RESTRICT|CASCADE>' })` + `@JoinColumn({ name: '<col>_id' })`. Default: `RESTRICT` for record-bearing parents (e.g. a city referenced by an area), `CASCADE` for owned children (e.g. a refresh token removed with its user).
 - Dates: `@Column({ type: 'timestamptz', name: '<col>' })`.
 - Enums: feature-scoped enum in `enums/`, `@Column({ type: 'enum', enum: <Enum>, default: <Enum>.<X>, name: '<col>' })`.
 - Audit: `@CreateDateColumn({ type: 'timestamptz', name: 'created_at' })` + `@UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })`.
@@ -84,7 +84,7 @@ npm run migration:generate -- src/database/migrations/Add<EntityName>
 After it lands:
 1. Prepend `await scopeToConnectionSchema(queryRunner);` to **both** `up()` and `down()` (import from `infrastructure/database/migration-utils`).
 2. Verify generated SQL: `timestamptz` for dates, `int` for IDs, FK `ON DELETE` clauses, index/enum names.
-3. For DB-level invariants beyond column constraints (unique partial indexes, exclusion/check constraints), add raw SQL — see `AppointmentsNoOverlapConstraint`.
+3. For DB-level invariants beyond column constraints (unique partial indexes, exclusion/check constraints), add raw SQL — see the unique user-search indexes in `AddUserSearchIndexesAndUnifyPhoneLength`.
 
 Skip Phase 6 entirely on `--no-migration`.
 

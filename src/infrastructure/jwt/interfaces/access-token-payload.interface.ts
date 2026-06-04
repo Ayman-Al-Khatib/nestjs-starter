@@ -1,3 +1,4 @@
+import { Role } from 'domain/enums/role.enum';
 import { BaseJwtPayload } from './base-jwt-payload.interface';
 
 /**
@@ -6,7 +7,7 @@ import { BaseJwtPayload } from './base-jwt-payload.interface';
  */
 export interface AccessTokenPayload {
   userId: number;
-  role?: string;
+  role: Role;
 }
 
 /**

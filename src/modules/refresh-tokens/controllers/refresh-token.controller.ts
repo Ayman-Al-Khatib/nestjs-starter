@@ -1,4 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Public } from 'core/decorators/public.decorator';
 import { Translator } from 'infrastructure/i18n';
 import { AppJwtService } from 'infrastructure/jwt/app-jwt.service';
 import { AuthThrottle } from 'infrastructure/throttle';
@@ -15,6 +16,7 @@ import { RefreshTokenService } from '../services/refresh-token.service';
  * POST /v1/auth/refresh  { refreshToken }  → new rotated token pair
  * POST /v1/auth/logout   { refreshToken }  → revoke this session
  */
+@Public()
 @Controller({ path: 'auth', version: '1' })
 export class RefreshTokenController {
   constructor(
@@ -37,6 +39,7 @@ export class RefreshTokenController {
     return new RefreshResponseDto(accessToken, rotated.token, rotated.role);
   }
 
+  @AuthThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Body() dto: LogoutDto): Promise<{ message: string }> {

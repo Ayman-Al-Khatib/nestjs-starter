@@ -36,8 +36,9 @@ export class SharpImageProcessor implements IImageProcessor {
         mimeType: `image/${format}`,
         size: buffer.length,
       };
-    } catch (e: any) {
-      throw new StorageProviderError(`Image compression failed: ${e?.message}`, e);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      throw new StorageProviderError(`Image compression failed: ${message}`, e);
     }
   }
 

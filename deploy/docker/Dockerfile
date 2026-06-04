@@ -29,8 +29,11 @@ FROM node:22-alpine AS runner
 # Production environment
 ENV NODE_ENV=production
 
-# Install basic system libraries (same as builder if needed by runtime deps)
-RUN apk add --no-cache libc6-compat python3 make g++
+# sharp's prebuilt musl binary needs libc6-compat at runtime. The build
+# toolchain (python3/make/g++) is intentionally NOT installed in the runtime
+# image — it belongs only in the builder stage. Leaving it out shrinks the
+# image and trims the attack surface.
+RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -56,11 +59,16 @@ RUN chown -R app:app /usr/src/app
 # # Switch to non-root user
 USER app
 
-# Default application port (can be overridden by the platform)
+# The app honors a platform-injected PORT (see resolvePort in main.ts) and
+# falls back to APP_PORT. Default to 3000 for a plain `docker run`.
 ENV PORT=3000
-
-# Expose the application port
 EXPOSE 3000
+
+# Liveness probe against the unversioned /healthz route. Uses node rather than
+# curl (absent in the slim alpine image) and resolves the port the same way
+# the app does.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "const p=process.env.PORT||process.env.APP_PORT||3000;require('http').get('http://127.0.0.1:'+p+'/healthz',r=>process.exit(r.statusCode<400?0:1)).on('error',()=>process.exit(1))"
 
 # Start the NestJS application
 CMD ["node", "dist/main.js"]

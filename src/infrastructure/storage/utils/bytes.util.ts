@@ -1,13 +1,32 @@
-import bytes from 'bytes';
 import { StorageError } from '../core/errors/storage.error';
 import { FileSize } from '../core/types/file-size';
 
+const UNIT_MULTIPLIERS: Record<string, number> = {
+  B: 1,
+  KB: 1024,
+  MB: 1024 ** 2,
+  GB: 1024 ** 3,
+  TB: 1024 ** 4,
+};
+
+const SIZE_PATTERN = /^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB|TB)$/i;
+
+/**
+ * Parses a human-readable size literal (e.g. `10MB`, `150KB`) into bytes.
+ * Self-contained — avoids depending on the untyped, transitively-pulled
+ * `bytes` package whose contract could shift under us.
+ */
 export function parseSize(size: FileSize): number {
-  const value = bytes(size);
-  if (value === null || Number.isNaN(value)) {
+  const match = SIZE_PATTERN.exec(size.trim());
+  if (!match) {
     throw new StorageError(`Invalid file size unit: ${size}`);
   }
-  return value;
+  const amount = Number(match[1]);
+  const multiplier = UNIT_MULTIPLIERS[match[2].toUpperCase()];
+  if (Number.isNaN(amount) || multiplier === undefined) {
+    throw new StorageError(`Invalid file size unit: ${size}`);
+  }
+  return Math.floor(amount * multiplier);
 }
 
 export function formatBytes(value: number): string {

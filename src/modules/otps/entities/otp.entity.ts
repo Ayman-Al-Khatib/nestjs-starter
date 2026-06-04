@@ -10,6 +10,7 @@ import { OtpPurpose } from '../enums/otp-purpose.enum';
 
 @Entity({ name: 'otps' })
 @Index(['phone', 'purpose', 'expiresAt'])
+@Index('IDX_otps_created_at', ['createdAt'])
 export class OtpEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id: string;

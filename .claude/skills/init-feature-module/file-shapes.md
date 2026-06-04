@@ -22,7 +22,7 @@ Reserved method/class names: @../naming-conventions/SKILL.md.
 - Methods: `findByIdOrFail`, `findAllFor<Audience>`, `findPageFor<Audience>`, `createFor<Audience>` / `createBy<Audience>`, `updateFor<Audience>` / `updateBy<Audience>`, `deleteFor<Audience>`, `assert<Constraint>`.
 - Never `listFor*` / `getFor*` — see naming-conventions.
 - Throw `NotFoundException` / `ForbiddenException` / `ConflictException` with translated messages.
-- At ~200 LOC, split: `<feature>-booking.service.ts`, `<feature>-query.service.ts`, `<feature>-status.service.ts`, with a thin facade `<feature>.service.ts` (see `AppointmentService`).
+- At ~200 LOC, split by responsibility into focused services — e.g. `<feature>-auth.service.ts` for a login/OTP flow alongside `<feature>.service.ts` for profile/CRUD (see `UserService` / `UserAuthService`).
 
 ## DTOs
 - `class-validator` + `Translator.trValMsg('common.validation.*')` for messages.
@@ -34,12 +34,12 @@ Reserved method/class names: @../naming-conventions/SKILL.md.
 
 ## Controllers (`<audience>-<feature>.controller.ts`)
 - Class-level `@Protected(Role.<AUDIENCE>)` (or `@Protected()` for any authenticated user; omit for public).
-- `@Controller({ path: '<audience>/<plural>', version: '1' })` — `admin/medical-records`, `patient/appointments`.
+- `@Controller({ path: '<audience>/<plural>', version: '1' })` — `admin/users`, `admin/cities`.
 - Inject `<Feature>Service`. Each handler: DTO parse → service call → `<Feature>ResponseDto.fromEntity(result)` (or `mapPaginated(result, ...fromEntity)`).
-- Handler names: `findAll(query)`, `findOne(id)`, `create(dto)`, `update(id, dto)`, `remove(id)`. Domain actions use domain verb (`book`, `cancel`, `approve`). Never prefix with `admin*`/`doctor*`/`public*` — that's in URL + class name.
+- Handler names: `findAll(query)`, `findOne(id)`, `create(dto)`, `update(id, dto)`, `remove(id)`. Domain actions use a domain verb (`activate`, `deactivate`, `complete`). Never prefix with `admin*`/`user*`/`public*` — that's in URL + class name.
 - `@Post()` → `@HttpCode(HttpStatus.CREATED)`. `@Delete()` → `@HttpCode(HttpStatus.NO_CONTENT)`.
 - `@Param('id', PositiveIntPipe)` for ID params.
-- Patient self-data routes: stack `@RequireCompletedProfile()` above `@Protected(Role.PATIENT)`.
+- User self-data routes that require a completed profile: stack `@RequireCompletedProfile()` above `@Protected(Role.USER)`.
 
 ## Module (`<plural>.module.ts`)
 - Class `<Plural>Module`.

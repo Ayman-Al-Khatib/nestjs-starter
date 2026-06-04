@@ -8,8 +8,8 @@ import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from '../pagination.constants'
  * to add filter / sort fields:
  *
  * @example
- *   export class ListRatingsAdminQueryDto extends PaginationQueryDto {
- *     @IsOptional() status?: RatingStatus;
+ *   export class ListUsersAdminQueryDto extends PaginationQueryDto {
+ *     @IsOptional() isActive?: boolean;
  *   }
  *
  * Pass an instance directly to `paginate(qb, query)` — `PaginationQueryDto`

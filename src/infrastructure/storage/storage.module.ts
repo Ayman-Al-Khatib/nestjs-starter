@@ -131,6 +131,10 @@ function buildSupabaseProviders(): Provider[] {
     {
       provide: SUPABASE_CLIENT,
       useFactory: (config: ConfigService<EnvironmentConfig>) => {
+        // Build the client only for the active driver: createClient() spins up a
+        // realtime WebSocket that throws on Node < 22 (no native WebSocket).
+        const driver = config.get<StorageDriver>('STORAGE_DRIVER') ?? StorageDriver.LOCAL;
+        if (driver !== StorageDriver.SUPABASE) return null;
         const url = config.get<string>('STORAGE_SUPABASE_URL');
         const key = config.get<string>('STORAGE_SUPABASE_SECRET_KEY');
         if (!url || !key) return null;

@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars --
-   NoopCacheDriver satisfies ICacheDriver while caching is disabled, so
-   every parameter is intentionally ignored. The names stay for IDE
-   tooling and so the interface contract is visible at a glance. */
+// NoopCacheDriver satisfies ICacheDriver while caching is disabled, so every
+// parameter is intentionally ignored — hence the `_`-prefixed names.
 import { Injectable } from '@nestjs/common';
 import { ICacheDriver } from './cache-driver.interface';
 

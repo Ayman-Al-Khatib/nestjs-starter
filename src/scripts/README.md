@@ -64,8 +64,8 @@ Pipeline:
    for an existing key before insert, or use `ON CONFLICT DO NOTHING`.
 4. Register it in
    [`seed-registry.ts`](seed/seed-registry.ts) **at the correct position**:
-   parents before children (areas before clinics, appointments before
-   ratings, etc.).
+   parents before children (e.g. cities before areas, since an area
+   references a city).
 5. Pick the right `runsIn:`:
    - `['all']` — always runs (cities, areas, admin).
    - `['development', 'test']` — sample data only, never production.

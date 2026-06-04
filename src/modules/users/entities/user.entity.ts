@@ -7,7 +7,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 @Entity({ name: 'users' })
 export class UserEntity extends BaseAccountEntity {
   @Index({ unique: true })
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 32 })
   phone: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'first_name' })

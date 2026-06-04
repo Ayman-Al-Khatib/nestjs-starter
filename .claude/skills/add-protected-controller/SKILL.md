@@ -1,6 +1,6 @@
 ---
 name: add-protected-controller
-description: Generate a new role-scoped controller for an existing module (e.g. admin-foo.controller.ts next to doctor-foo.controller.ts). Wires @Protected(Role.X), the path/version, and registers in the module. Triggers: "expose this module to admins/doctors/patients", "add an admin controller for <module>", "/add-protected-controller".
+description: Generate a new role-scoped controller for an existing module (e.g. admin-foo.controller.ts next to user-foo.controller.ts). Wires @Protected(Role.X), the path/version, and registers in the module. Triggers: "expose this module to admins/users", "add an admin controller for <module>", "/add-protected-controller".
 user-invocable: true
 argument-hint: <module> <Role> [--path <segment>] [--public]
 allowed-tools: Read, Grep, Glob, Write, Edit, Bash
@@ -12,21 +12,20 @@ Generate a new audience-scoped controller for an existing module. Controller is 
 
 ## Arguments
 - `<module>` — existing folder under `src/modules/` (kebab-case).
-- `<Role>` — one of the values in `domain/enums/role.enum.ts` (`ADMIN`, `DOCTOR`, `PATIENT`). Uppercase, even though the enum value is lowercase.
-- `--path <segment>` — override the URL prefix. Default: `<role>/<module>s` (`admin/clinics`, `patient/appointments`).
+- `<Role>` — one of the values in `domain/enums/role.enum.ts` (`ADMIN`, `USER`). Uppercase, even though the enum value is lowercase.
+- `--path <segment>` — override the URL prefix. Default: `<role>/<module>s` (`admin/cities`, `admin/users`).
 - `--public` — drop `@Protected(...)` for unauthenticated controllers (rare; public listings like cities/areas).
 
 ## Phase 1 — Validate
 1. `Glob src/modules/<module>/` — confirm it exists.
 2. Confirm `Role.<Role>` is defined in `domain/enums/role.enum.ts`. If missing, stop and ask whether to extend the enum.
-3. Reference style: `appointment/controllers/admin-appointment.controller.ts` (or another sibling).
+3. Reference style: `users/controllers/admin-user.controller.ts` (or another sibling).
 4. If `<role>-<module>.controller.ts` already exists, abort and suggest `/add-endpoint`.
 
 ## Phase 2 — Decide the surface area
 Ask once for the endpoint set unless the user specified them. Typical defaults:
 - `admin/<module>s` — `POST /`, `GET /`, `GET /:id`, `PATCH /:id`, `DELETE /:id`.
-- `doctor/<module>s` — scoped reads + status transitions (no destructive deletes).
-- `patient/<module>s` — scoped reads + a single self-service mutation (book, cancel, …).
+- `user/<module>s` — scoped reads + a single self-service mutation (e.g. `complete-profile`, `update`).
 
 If the existing service has no audience-scoped methods for this role, stop and route to `/add-endpoint` per route — don't fabricate service methods here.
 
@@ -52,7 +51,7 @@ export class <Role><Module>Controller {
 ```
 
 Rules:
-- `Role.PATIENT` routes that need a completed profile: stack `@RequireCompletedProfile()` above `@Protected(Role.PATIENT)`.
+- `Role.USER` routes that need a completed profile: stack `@RequireCompletedProfile()` above `@Protected(Role.USER)`.
 - Caller-entity routes: `@CurrentUser() <role>: <Role>Entity`.
 - Handlers return DTO instances or `IPaginatedResponse<DTO>` via `mapPaginated(result, <Dto>.fromEntity)`.
 - POST creates: `@HttpCode(HttpStatus.CREATED)`.

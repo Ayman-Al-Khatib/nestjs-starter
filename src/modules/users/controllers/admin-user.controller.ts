@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -41,6 +42,18 @@ export class AdminUserController {
   @Get(':id')
   async findOne(@Param('id', PositiveIntPipe) id: number): Promise<UserResponseDto> {
     const user = await this.userService.findByIdOrFail(id);
+    return this.userService.buildResponseDto(user);
+  }
+
+  @Patch(':id/deactivate')
+  async deactivate(@Param('id', PositiveIntPipe) id: number): Promise<UserResponseDto> {
+    const user = await this.userService.deactivateByAdmin(id);
+    return this.userService.buildResponseDto(user);
+  }
+
+  @Patch(':id/activate')
+  async activate(@Param('id', PositiveIntPipe) id: number): Promise<UserResponseDto> {
+    const user = await this.userService.activateByAdmin(id);
     return this.userService.buildResponseDto(user);
   }
 }

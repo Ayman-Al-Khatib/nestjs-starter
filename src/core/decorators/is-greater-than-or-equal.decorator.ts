@@ -10,7 +10,7 @@ import { comparePropertyDecorator } from './compare-with-property.util';
  * Returns `true` whenever either side is `null` / `undefined`.
  *
  * @example
- *   class ListClinicsQueryDto extends PaginationQueryDto {
+ *   class PriceRangeQueryDto extends PaginationQueryDto {
  *     @IsOptional() minPrice?: number;
  *     @IsOptional()
  *     @IsGreaterThanOrEqual('minPrice') maxPrice?: number;

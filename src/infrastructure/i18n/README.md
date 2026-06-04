@@ -39,10 +39,10 @@ No env vars. Default language is `'en'` (see `i18n.constants.ts`).
 constructor(private readonly translator: Translator) {}
 
 // Plain key
-this.translator.tr('clinic.errors.not_found');
+this.translator.tr('city.errors.not_found');
 
 // With placeholders — the second arg is type-checked against the key
-this.translator.tr('appointment.errors.overlap', { startTime: '10:00' });
+this.translator.tr('otp.errors.resend_cooldown', { seconds: 30 });
 
 // In code without DI (Transform callbacks, decorators)
 Translator.trStatic('common.errors.unauthorized');
@@ -83,7 +83,7 @@ produces:
 
 - `TranslationKey` — exhaustive string-literal union of every dotted key.
 - `TranslationInterpolations` — per-key required placeholder map (so
-  `tr('appointment.errors.overlap')` without `{startTime}` is a type
+  `tr('otp.errors.resend_cooldown')` without `{seconds}` is a type
   error).
 
 Editing the file by hand is overwritten on every `i18n:sync`. See
